@@ -11,6 +11,8 @@ public class ShipScript : MonoBehaviour {
     private float desiredHeight = 3.0f;
     private float maxForce = 10.0f;
     private float castDistance = 30.0f;
+    private float speed = 5.0f;
+    private float steerSpeed = 5.0f;
 
     // Use this for initialization
     void Start () {
@@ -24,6 +26,10 @@ public class ShipScript : MonoBehaviour {
 
     // Update is called once per frame
     void Update () {
+
+        float horz = Input.GetAxis("Horizontal");
+        float vert = Input.GetAxis("Vertical");
+        float accel = Input.GetAxis("Acceleration");
 
         RaycastHit hit;
         if(Physics.Raycast(transform.position, newGravity, out hit, castDistance))
@@ -75,16 +81,18 @@ public class ShipScript : MonoBehaviour {
 
         Vector3 proj = ShipModel.forward - (Vector3.Dot(ShipModel.forward, -newGravity)) * -newGravity;
         Quaternion newRot = Quaternion.LookRotation(proj, -newGravity);
-        ShipModel.rotation = Quaternion.Lerp(ShipModel.rotation, newRot, 1.5f * Time.deltaTime);
-        GetComponent<Rigidbody>().AddForce(ShipModel.forward * 3.0f * GetComponent<Rigidbody>().mass);
+        ShipModel.rotation = Quaternion.Lerp(ShipModel.rotation, newRot, 1.25f * Time.deltaTime);
 
-        Vector3 newPos = transform.position - 15.0f * ShipModel.forward + 6.0f * ShipModel.up - 1.0f * ShipModel.right;
+        Vector3 newPos = transform.position - 17.0f * ShipModel.forward + 6.0f * ShipModel.up - 1.0f * ShipModel.right;
         Vector3 camVel = Vector3.zero;
-        cam.transform.position = Vector3.SmoothDamp(cam.transform.position, newPos, ref camVel, 0.12f);
+        cam.transform.position = Vector3.SmoothDamp(cam.transform.position, newPos, ref camVel, 0.1f);
 
         Quaternion oldRot = cam.transform.rotation;
         newRot = Quaternion.LookRotation(ShipModel.forward, ShipModel.up);
-        cam.transform.rotation = Quaternion.Lerp(oldRot, newRot, 1.0f * Time.deltaTime);
+        cam.transform.rotation = Quaternion.Lerp(oldRot, newRot, 5.0f * Time.deltaTime);
+
+        ShipModel.RotateAroundLocal(ShipModel.up, horz * Time.deltaTime * steerSpeed);
+        GetComponent<Rigidbody>().AddForce(ShipModel.forward * speed * GetComponent<Rigidbody>().mass * accel);
 
         Debug.DrawRay(transform.position, newGravity.normalized * desiredHeight, Color.green);
         Debug.Log(newGravity);
