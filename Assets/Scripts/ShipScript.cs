@@ -11,7 +11,7 @@ public class ShipScript : MonoBehaviour {
     private float desiredHeight = 3.0f;
     private float maxForce = 10.0f;
     private float castDistance = 30.0f;
-    private float speed = 5.0f;
+    private float speed = 50.0f;
     private float steerSpeed = 5.0f;
 
     // Use this for initialization
@@ -40,8 +40,7 @@ public class ShipScript : MonoBehaviour {
             newGravity = -hit.normal.normalized;
             newGravity *= gravityScalar;
 
-            float currentUp = GetComponent<Rigidbody>().velocity.y;
-            currentUp = Vector3.Dot(GetComponent<Rigidbody>().velocity, ShipModel.up);
+            float currentUp =  Vector3.Dot(GetComponent<Rigidbody>().velocity, ShipModel.up);
 
             float force = desiredHeight - hit.distance;
 
@@ -53,11 +52,11 @@ public class ShipScript : MonoBehaviour {
 
                 if (currentUp <= 0.0f)
                 {
-                    force *= force;
+                    force *= 2.0f;
                 }
                 else
                 {
-                    force = Mathf.Sqrt(force);
+                    force *= 0.5f;
                 }
             }
             else
@@ -92,7 +91,39 @@ public class ShipScript : MonoBehaviour {
         cam.transform.rotation = Quaternion.Lerp(oldRot, newRot, 5.0f * Time.deltaTime);
 
         ShipModel.RotateAroundLocal(ShipModel.up, horz * Time.deltaTime * steerSpeed);
-        GetComponent<Rigidbody>().AddForce(ShipModel.forward * speed * GetComponent<Rigidbody>().mass * accel);
+        //GetComponent<Rigidbody>().AddForce(ShipModel.forward * speed * GetComponent<Rigidbody>().mass * accel);
+
+        float desiredSpeed = speed * accel * 1.25f;
+        float currentSpeed = Vector3.Dot(GetComponent<Rigidbody>().velocity, ShipModel.forward);
+
+        float accelForce = (desiredSpeed - currentSpeed);// * accel;
+        if(currentSpeed < desiredSpeed)
+        {
+            if(currentSpeed > 0)
+            {
+
+            }
+            else
+            {
+                //accelForce *= accelForce;
+            }
+        }
+        else
+        {
+            if(currentSpeed < 0)
+            {
+
+            }
+            else
+            {
+                //accelForce *= accelForce;
+            }
+        }
+
+        GetComponent<Rigidbody>().AddForce(ShipModel.forward * accelForce * GetComponent<Rigidbody>().mass);
+
+        Debug.Log(currentSpeed + " " + accelForce);
+
 
         Debug.DrawRay(transform.position, newGravity.normalized * desiredHeight, Color.green);
         Debug.Log(newGravity);
