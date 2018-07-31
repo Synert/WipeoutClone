@@ -4,14 +4,14 @@ using UnityEngine;
 
 public class ShipScript : MonoBehaviour {
 
-    public Transform ShipModel;
+    public Transform ship;
     public Camera cam;
     private Vector3 newGravity = new Vector3(0.0f, -1.0f, 0.0f);
-    private float gravityScalar = 9.8f;
+    private float gravityScalar = 19.8f;
     private float desiredHeight = 3.0f;
     private float maxForce = 10.0f;
     private float castDistance = 30.0f;
-    private float speed = 50.0f;
+    private float speed = 75.0f;
     private float steerSpeed = 5.0f;
 
     private Rigidbody rb;
@@ -25,16 +25,16 @@ public class ShipScript : MonoBehaviour {
     {
         rb.AddForce(newGravity * rb.mass);
 
-        Vector3 proj = ShipModel.forward - (Vector3.Dot(ShipModel.forward, -newGravity)) * -newGravity;
+        Vector3 proj = ship.forward - (Vector3.Dot(ship.forward, -newGravity)) * -newGravity;
         Quaternion newRot = Quaternion.LookRotation(proj, -newGravity);
-        ShipModel.rotation = Quaternion.Lerp(ShipModel.rotation, newRot, 1.25f * Time.deltaTime);
+        ship.rotation = Quaternion.Lerp(ship.rotation, newRot, 1.25f * Time.deltaTime);
 
-        Vector3 newPos = transform.position - 17.0f * ShipModel.forward + 6.0f * ShipModel.up - 1.0f * ShipModel.right;
+        Vector3 newPos = transform.position - 17.0f * ship.forward + 6.0f * ship.up - 1.0f * ship.right;
         Vector3 camVel = Vector3.zero;
         cam.transform.position = Vector3.SmoothDamp(cam.transform.position, newPos, ref camVel, 0.08f);
 
         Quaternion oldRot = cam.transform.rotation;
-        newRot = Quaternion.LookRotation(ShipModel.forward, ShipModel.up);
+        newRot = Quaternion.LookRotation(ship.forward, ship.up);
         cam.transform.rotation = Quaternion.Lerp(oldRot, newRot, 5.0f * Time.deltaTime);
     }
 
@@ -54,7 +54,7 @@ public class ShipScript : MonoBehaviour {
             newGravity = -hit.normal.normalized;
             newGravity *= gravityScalar;
 
-            float currentUp =  Vector3.Dot(rb.velocity, ShipModel.up);
+            float currentUp =  Vector3.Dot(rb.velocity, ship.up);
 
             float force = desiredHeight - hit.distance;
 
@@ -93,12 +93,12 @@ public class ShipScript : MonoBehaviour {
         }
 
         //apply the inputs
-        ShipModel.RotateAroundLocal(ShipModel.up, horz * Time.deltaTime * steerSpeed);
+        ship.RotateAroundLocal(ship.up, horz * Time.deltaTime * steerSpeed);
 
         float desiredSpeed = speed * accel * 1.25f;
-        float currentSpeed = Vector3.Dot(rb.velocity, ShipModel.forward);
+        float currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
         float accelForce = (desiredSpeed - currentSpeed);
-        rb.AddForce(ShipModel.forward * accelForce * rb.mass);
+        rb.AddForce(ship.forward * accelForce * rb.mass);
 
         Debug.DrawRay(transform.position, newGravity.normalized * desiredHeight, Color.green);
         Debug.Log(newGravity);
