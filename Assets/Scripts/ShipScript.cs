@@ -8,8 +8,9 @@ public class ShipScript : MonoBehaviour {
     public Camera cam;
     private Vector3 newGravity = new Vector3(0.0f, -1.0f, 0.0f);
     private float gravityScalar = 9.8f;
-    private float desiredHeight = 4.0f;
+    private float desiredHeight = 3.0f;
     private float maxForce = 10.0f;
+    private float castDistance = 30.0f;
 
     // Use this for initialization
     void Start () {
@@ -25,33 +26,25 @@ public class ShipScript : MonoBehaviour {
     void Update () {
 
         RaycastHit hit;
-        if(Physics.Raycast(transform.position, newGravity, out hit, 30.0f))
+        if(Physics.Raycast(transform.position, newGravity, out hit, castDistance))
         {
-            Debug.DrawRay(transform.position, newGravity.normalized * 30.0f, Color.blue);
+            Debug.DrawRay(transform.position, newGravity.normalized * castDistance, Color.blue);
 
-            //first of all, make the ship face the track
+            //adjust gravity to new surface
             newGravity = -hit.normal.normalized;
             newGravity *= gravityScalar;
-            //ShipModel.LookAt(ShipModel.position + ShipModel.forward - hit.normal);
-            //ShipModel.rotation = Quaternion.FromToRotation(Vector3.up, -newGravity);
 
             float currentUp = GetComponent<Rigidbody>().velocity.y;
             currentUp = Vector3.Dot(GetComponent<Rigidbody>().velocity, ShipModel.up);
+
             float force = desiredHeight - hit.distance;
-
-            force *= (maxForce / desiredHeight);
-
-            //force = Mathf.Pow(force, 1.1f);
-            //force *= force;
-
-            force += 1.0f;
-            //force *= force;
-
-            //force *= GetComponent<Rigidbody>().mass;
 
             if (hit.distance <= desiredHeight)
             {
+                force *= (maxForce / desiredHeight);
                 if (force < 0) force *= -1.0f;
+                force += 1.0f;
+
                 if (currentUp <= 0.0f)
                 {
                     force *= force;
@@ -61,29 +54,16 @@ public class ShipScript : MonoBehaviour {
                     force = Mathf.Sqrt(force);
                 }
             }
-            else if (hit.distance > desiredHeight)
+            else
             {
-                force = desiredHeight - hit.distance;
-
                 if (force > 0) force *= -1.0f;
 
-                //force *= 0.15f;
-
-                if (currentUp >= 0.0f)
+                if(currentUp <= 0.0f)
                 {
-                    //force *= 2.0f;
-                }
-                else
-                {
-                    //force *= 0.15f;
                     force = 0.0f;
                 }
-
-                //force = 0.0f;
             }
 
-            //force *= force;
-            //force *= 0.7f;
             GetComponent<Rigidbody>().AddForce(force * -newGravity * GetComponent<Rigidbody>().mass);
         }
         else
@@ -93,34 +73,20 @@ public class ShipScript : MonoBehaviour {
             newGravity *= gravityScalar;
         }
 
-        //ShipModel.rotation = Quaternion.FromToRotation(Vector3.up, -newGravity);
-
-        var quatHit = Quaternion.FromToRotation(Vector3.up, -newGravity);
-        var quatForward = Quaternion.FromToRotation(ShipModel.forward, ShipModel.forward);
-        var quatC = quatHit * ShipModel.rotation;
-        //ShipModel.rotation = quatC;
-
         Vector3 proj = ShipModel.forward - (Vector3.Dot(ShipModel.forward, -newGravity)) * -newGravity;
         Quaternion newRot = Quaternion.LookRotation(proj, -newGravity);
-        ShipModel.rotation = Quaternion.Lerp(ShipModel.rotation, newRot, 3.0f * Time.deltaTime);
-
-        Quaternion newVel = Quaternion.LookRotation(ShipModel.forward);
-
-
-        //GetComponent<Rigidbody>().velocity = ShipModel.forward * GetComponent<Rigidbody>().velocity.magnitude;
+        ShipModel.rotation = Quaternion.Lerp(ShipModel.rotation, newRot, 1.5f * Time.deltaTime);
         GetComponent<Rigidbody>().AddForce(ShipModel.forward * 3.0f * GetComponent<Rigidbody>().mass);
 
-        Debug.DrawRay(transform.position, newGravity.normalized * desiredHeight, Color.green);
+        Vector3 newPos = transform.position - 15.0f * ShipModel.forward + 6.0f * ShipModel.up - 1.0f * ShipModel.right;
+        Vector3 camVel = Vector3.zero;
+        cam.transform.position = Vector3.SmoothDamp(cam.transform.position, newPos, ref camVel, 0.12f);
 
-        Debug.Log(newGravity);
-
-        Vector3 newPos = transform.position - 8.0f * ShipModel.forward + 5.0f * ShipModel.up;
-        Vector3 oldPos = cam.transform.position;
-        cam.transform.position = Vector3.Lerp(oldPos, newPos, 4.0f * Time.deltaTime);
-
-        //cam.transform.position = transform.position - 6.0f * ShipModel.forward + 3.0f * ShipModel.up;
         Quaternion oldRot = cam.transform.rotation;
         newRot = Quaternion.LookRotation(ShipModel.forward, ShipModel.up);
-        cam.transform.rotation = Quaternion.Lerp(oldRot, newRot, 5.0f * Time.deltaTime);
+        cam.transform.rotation = Quaternion.Lerp(oldRot, newRot, 1.0f * Time.deltaTime);
+
+        Debug.DrawRay(transform.position, newGravity.normalized * desiredHeight, Color.green);
+        Debug.Log(newGravity);
     }
 }
