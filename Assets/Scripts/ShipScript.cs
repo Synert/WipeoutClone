@@ -41,9 +41,11 @@ public class ShipScript : MonoBehaviour {
     // Update is called once per frame
     void Update () {
 
+        //inputs
         float horz = Input.GetAxis("Horizontal");
         float vert = Input.GetAxis("Vertical");
         float accel = Input.GetAxis("Acceleration");
+        float drift = Input.GetAxis("Drift");
 
         RaycastHit hit;
         if(Physics.Raycast(transform.position, newGravity, out hit, castDistance))
@@ -99,6 +101,13 @@ public class ShipScript : MonoBehaviour {
         float currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
         float accelForce = (desiredSpeed - currentSpeed);
         rb.AddForce(ship.forward * accelForce * rb.mass);
+
+        //braking to prevent drifts
+        desiredSpeed = 0.0f;
+        currentSpeed = Vector3.Dot(rb.velocity, ship.right);
+        accelForce = (desiredSpeed - currentSpeed);
+        accelForce *= (1.0f - drift);
+        rb.AddForce(ship.right * accelForce * rb.mass);
 
         Debug.DrawRay(transform.position, newGravity.normalized * desiredHeight, Color.green);
         Debug.Log(newGravity);
