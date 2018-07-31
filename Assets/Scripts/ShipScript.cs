@@ -14,14 +14,28 @@ public class ShipScript : MonoBehaviour {
     private float speed = 50.0f;
     private float steerSpeed = 5.0f;
 
+    private Rigidbody rb;
+
     // Use this for initialization
     void Start () {
-		
-	}
+        rb = GetComponent<Rigidbody>();
+    }
 
     void FixedUpdate()
     {
-        GetComponent<Rigidbody>().AddForce(newGravity * GetComponent<Rigidbody>().mass);
+        rb.AddForce(newGravity * rb.mass);
+
+        Vector3 proj = ShipModel.forward - (Vector3.Dot(ShipModel.forward, -newGravity)) * -newGravity;
+        Quaternion newRot = Quaternion.LookRotation(proj, -newGravity);
+        ShipModel.rotation = Quaternion.Lerp(ShipModel.rotation, newRot, 1.25f * Time.deltaTime);
+
+        Vector3 newPos = transform.position - 17.0f * ShipModel.forward + 6.0f * ShipModel.up - 1.0f * ShipModel.right;
+        Vector3 camVel = Vector3.zero;
+        cam.transform.position = Vector3.SmoothDamp(cam.transform.position, newPos, ref camVel, 0.08f);
+
+        Quaternion oldRot = cam.transform.rotation;
+        newRot = Quaternion.LookRotation(ShipModel.forward, ShipModel.up);
+        cam.transform.rotation = Quaternion.Lerp(oldRot, newRot, 5.0f * Time.deltaTime);
     }
 
     // Update is called once per frame
@@ -40,7 +54,7 @@ public class ShipScript : MonoBehaviour {
             newGravity = -hit.normal.normalized;
             newGravity *= gravityScalar;
 
-            float currentUp =  Vector3.Dot(GetComponent<Rigidbody>().velocity, ShipModel.up);
+            float currentUp =  Vector3.Dot(rb.velocity, ShipModel.up);
 
             float force = desiredHeight - hit.distance;
 
@@ -69,7 +83,7 @@ public class ShipScript : MonoBehaviour {
                 }
             }
 
-            GetComponent<Rigidbody>().AddForce(force * -newGravity * GetComponent<Rigidbody>().mass);
+            rb.AddForce(force * -newGravity * rb.mass);
         }
         else
         {
@@ -78,52 +92,13 @@ public class ShipScript : MonoBehaviour {
             newGravity *= gravityScalar;
         }
 
-        Vector3 proj = ShipModel.forward - (Vector3.Dot(ShipModel.forward, -newGravity)) * -newGravity;
-        Quaternion newRot = Quaternion.LookRotation(proj, -newGravity);
-        ShipModel.rotation = Quaternion.Lerp(ShipModel.rotation, newRot, 1.25f * Time.deltaTime);
-
-        Vector3 newPos = transform.position - 17.0f * ShipModel.forward + 6.0f * ShipModel.up - 1.0f * ShipModel.right;
-        Vector3 camVel = Vector3.zero;
-        cam.transform.position = Vector3.SmoothDamp(cam.transform.position, newPos, ref camVel, 0.1f);
-
-        Quaternion oldRot = cam.transform.rotation;
-        newRot = Quaternion.LookRotation(ShipModel.forward, ShipModel.up);
-        cam.transform.rotation = Quaternion.Lerp(oldRot, newRot, 5.0f * Time.deltaTime);
-
+        //apply the inputs
         ShipModel.RotateAroundLocal(ShipModel.up, horz * Time.deltaTime * steerSpeed);
-        //GetComponent<Rigidbody>().AddForce(ShipModel.forward * speed * GetComponent<Rigidbody>().mass * accel);
 
         float desiredSpeed = speed * accel * 1.25f;
-        float currentSpeed = Vector3.Dot(GetComponent<Rigidbody>().velocity, ShipModel.forward);
-
-        float accelForce = (desiredSpeed - currentSpeed);// * accel;
-        if(currentSpeed < desiredSpeed)
-        {
-            if(currentSpeed > 0)
-            {
-
-            }
-            else
-            {
-                //accelForce *= accelForce;
-            }
-        }
-        else
-        {
-            if(currentSpeed < 0)
-            {
-
-            }
-            else
-            {
-                //accelForce *= accelForce;
-            }
-        }
-
-        GetComponent<Rigidbody>().AddForce(ShipModel.forward * accelForce * GetComponent<Rigidbody>().mass);
-
-        Debug.Log(currentSpeed + " " + accelForce);
-
+        float currentSpeed = Vector3.Dot(rb.velocity, ShipModel.forward);
+        float accelForce = (desiredSpeed - currentSpeed);
+        rb.AddForce(ShipModel.forward * accelForce * rb.mass);
 
         Debug.DrawRay(transform.position, newGravity.normalized * desiredHeight, Color.green);
         Debug.Log(newGravity);
