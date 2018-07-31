@@ -23,6 +23,11 @@ public class ShipScript : MonoBehaviour {
 
     void FixedUpdate()
     {
+        float vel = rb.velocity.sqrMagnitude;
+        //if (vel > speed) vel = speed;
+        //vel += speed;
+        vel /= (speed * speed);
+
         rb.AddForce(newGravity * rb.mass);
 
         Vector3 proj = ship.forward - (Vector3.Dot(ship.forward, -newGravity)) * -newGravity;
@@ -31,11 +36,13 @@ public class ShipScript : MonoBehaviour {
 
         Vector3 newPos = transform.position - 17.0f * ship.forward + 6.0f * ship.up - 1.0f * ship.right;
         Vector3 camVel = Vector3.zero;
-        cam.transform.position = Vector3.SmoothDamp(cam.transform.position, newPos, ref camVel, 0.08f);
+        cam.transform.position = Vector3.SmoothDamp(cam.transform.position, newPos, ref camVel, 0.08f * (1.0f - vel * 0.5f));
+
+        Debug.Log(vel);
 
         Quaternion oldRot = cam.transform.rotation;
         newRot = Quaternion.LookRotation(ship.forward, ship.up);
-        cam.transform.rotation = Quaternion.Lerp(oldRot, newRot, 5.0f * Time.deltaTime);
+        cam.transform.rotation = Quaternion.Lerp(oldRot, newRot, 5.0f * (1.0f + vel) * Time.deltaTime);
     }
 
     // Update is called once per frame
