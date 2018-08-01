@@ -22,6 +22,7 @@ public class ShipScript : MonoBehaviour {
     private float prevRotate = 0.0f;
     private float prevLean = 0.0f;
     private float rotatePercentage = 0.0f;
+    private float leanPercentage = 0.0f;
 
     private Rigidbody rb;
 
@@ -37,59 +38,18 @@ public class ShipScript : MonoBehaviour {
 
         rb.AddForce(newGravity * rb.mass);
 
-        float vert = Input.GetAxis("Vertical");
-        if (vert > 1.0f) vert = 1.0f;
-        if (vert < -1.0f) vert = -1.0f;
-
-        float horz = Input.GetAxis("Horizontal");
-
-        if (rotatePercentage < vert)
-        {
-            rotatePercentage += Time.deltaTime * 3.5f;
-        }
-        else if (rotatePercentage > vert)
-        {
-            rotatePercentage -= Time.deltaTime * 3.5f;
-        }
-
-        ship.RotateAroundLocal(ship.right, -prevRotate);
-
-        Vector3 proj = ship.forward - (Vector3.Dot(ship.forward, -newGravity)) * -newGravity;
-        Quaternion newRot = Quaternion.LookRotation(proj, -newGravity);
-        ship.rotation = Quaternion.Lerp(ship.rotation, newRot, 1.0f * Time.deltaTime);
-
-        float currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
-
-        prevRotate = (Mathf.Deg2Rad * rotatePercentage) * 10.0f;
-        prevLean = (Mathf.Deg2Rad * horz) * (2.5f * (currentSpeed / speed) + 0.5f);
-        ship.RotateAroundLocal(ship.right, prevRotate);
-        ship.RotateAroundLocal(ship.forward, prevLean);
-
-        Vector3 newPos = transform.position - (15.0f + vel * 12.0f) * ship.forward + 6.0f * ship.up - 1.0f * ship.right;
-        Vector3 camVel = Vector3.zero;
-        cam.transform.position = Vector3.SmoothDamp(cam.transform.position, newPos, ref camVel, 0.06f);
-
-        Debug.Log(vel);
-
-        Quaternion oldRot = cam.transform.rotation;
-        newRot = Quaternion.LookRotation(ship.forward, ship.up);
-        cam.transform.rotation = Quaternion.Lerp(oldRot, newRot, 5.0f * (1.0f + vel) * Time.deltaTime);
-    }
-
-    // Update is called once per frame
-    void Update () {
-
         //inputs
         float horz = Input.GetAxis("Horizontal");
         float vert = Input.GetAxis("Vertical");
+        if (vert > 1.0f) vert = 1.0f;
+        if (vert < -1.0f) vert = -1.0f;
         float accel = Input.GetAxis("Acceleration");
         float drift = Input.GetAxis("Drift");
 
+        //get the current surface
         RaycastHit hit;
-        if(Physics.Raycast(transform.position, -ship.up, out hit, castDistance))
+        if (Physics.Raycast(transform.position, -ship.up, out hit, castDistance))
         {
-            //Debug.DrawRay(transform.position, newGravity.normalized * castDistance, Color.blue);
-
             //adjust gravity to new surface
             newGravity = -hit.normal.normalized;
             newGravity *= gravityScalar;
@@ -117,7 +77,7 @@ public class ShipScript : MonoBehaviour {
             {
                 if (force > 0) force *= -1.0f;
 
-                if(currentUp <= 0.0f)
+                if (currentUp <= 0.0f)
                 {
                     force = 0.0f;
                 }
@@ -132,14 +92,68 @@ public class ShipScript : MonoBehaviour {
             newGravity *= gravityScalar;
         }
 
-        //apply the inputs
+        //ship rotation shenanigans
+
+        if (rotatePercentage < vert)
+        {
+            rotatePercentage += Time.deltaTime * 3.5f;
+        }
+        else if (rotatePercentage > vert)
+        {
+            rotatePercentage -= Time.deltaTime * 3.5f;
+        }
+
+        if (leanPercentage < horz)
+        {
+            if (horz <= 0.0f)
+            {
+                leanPercentage += Time.deltaTime * 1.1f;
+            }
+            else
+            {
+                leanPercentage += Time.deltaTime * 1.5f;
+            }
+        }
+        else if (leanPercentage > horz)
+        {
+            if (horz >= 0.0f)
+            {
+                leanPercentage -= Time.deltaTime * 1.1f;
+            }
+            else
+            {
+                leanPercentage -= Time.deltaTime * 1.5f;
+            }
+        }
+
+        ship.RotateAroundLocal(ship.forward, -prevLean);
+        ship.RotateAroundLocal(ship.right, -prevRotate);
         ship.RotateAroundLocal(ship.up, horz * Time.deltaTime * steerSpeed);
 
-        float desiredSpeed = speed * accel * 1.25f;
+        Vector3 proj = ship.forward.normalized - (Vector3.Dot(ship.forward, -newGravity.normalized)) * -newGravity.normalized;
+        Quaternion newRot = Quaternion.LookRotation(proj.normalized, -newGravity.normalized);
+        Quaternion finalRot = Quaternion.Lerp(ship.rotation, newRot, 6.0f * Time.deltaTime);
+        ship.rotation = finalRot;
+
         float currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
+
+        prevRotate = (Mathf.Deg2Rad * rotatePercentage) * 10.0f;
+        prevLean = (Mathf.Deg2Rad * leanPercentage) * (30.0f * (currentSpeed / speed) + 20.0f);
+        ship.RotateAroundLocal(ship.right, prevRotate);
+        ship.RotateAroundLocal(ship.forward, prevLean);
+
+        Vector3 newPos = transform.position - (15.0f + vel * 12.0f) * ship.forward + 6.0f * ship.up - 1.0f * ship.right;
+        Vector3 camVel = Vector3.zero;
+        cam.transform.position = Vector3.SmoothDamp(cam.transform.position, newPos, ref camVel, 0.06f);
+
+        Quaternion oldRot = cam.transform.rotation;
+        newRot = Quaternion.LookRotation(ship.forward, ship.up);
+        cam.transform.rotation = Quaternion.Lerp(oldRot, newRot, 5.0f * (1.0f + vel) * Time.deltaTime);
+
+        float desiredSpeed = speed * accel * 1.25f;
+        currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
         float accelForce = (desiredSpeed - currentSpeed);
         rb.AddForce(ship.forward * accelForce * rb.mass);
-        Debug.DrawRay(transform.position + ship.up * 1.0f, ship.forward * 5.0f, Color.red);
 
         //braking to prevent drifts
         desiredSpeed = 0.0f;
@@ -149,6 +163,13 @@ public class ShipScript : MonoBehaviour {
         rb.AddForce(ship.right * accelForce * rb.mass);
 
         Debug.DrawRay(transform.position, -ship.up * desiredHeight, Color.green);
+        Debug.DrawRay(transform.position + ship.up * 5.0f, ship.forward * 5.0f, Color.red);
         Debug.Log(newGravity);
+        Debug.Log(vel);
+    }
+
+    // Update is called once per frame
+    void Update () {
+
     }
 }
