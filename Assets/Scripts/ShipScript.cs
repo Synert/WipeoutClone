@@ -3,16 +3,20 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class ShipScript : MonoBehaviour {
+    
+    //gotta set this in-editor to access the ship's transform/camera
+    [SerializeField] private Transform ship;
+    [SerializeField] private Camera cam;
 
-    public Transform ship;
-    public Camera cam;
+    //controls how the ship handles
+    [SerializeField] private float gravityScalar = 19.8f;
+    [SerializeField] private float desiredHeight = 3.0f;
+    [SerializeField] private float maxForce = 20.0f;
+    [SerializeField] private float castDistance = 30.0f;
+    [SerializeField] private float speed = 75.0f;
+    [SerializeField] private float steerSpeed = 5.0f;
+
     private Vector3 newGravity = new Vector3(0.0f, -1.0f, 0.0f);
-    private float gravityScalar = 19.8f;
-    private float desiredHeight = 3.0f;
-    private float maxForce = 10.0f;
-    private float castDistance = 30.0f;
-    private float speed = 75.0f;
-    private float steerSpeed = 5.0f;
 
     //leaning stuff while moving
     private float prevRotate = 0.0f;
