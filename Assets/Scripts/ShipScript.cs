@@ -6,6 +6,7 @@ public class ShipScript : MonoBehaviour {
     
     //gotta set this in-editor to access the ship's transform/camera
     [SerializeField] private Transform ship;
+    [SerializeField] private Transform model;
     [SerializeField] private Camera cam;
 
     //controls how the ship handles
@@ -23,6 +24,10 @@ public class ShipScript : MonoBehaviour {
     private float prevLean = 0.0f;
     private float rotatePercentage = 0.0f;
     private float leanPercentage = 0.0f;
+
+    //do a barrel roll
+    private float rollDegrees = 0.0f;
+    private int rollDir = 0;
 
     private Rigidbody rb;
 
@@ -45,6 +50,20 @@ public class ShipScript : MonoBehaviour {
         if (vert < -1.0f) vert = -1.0f;
         float accel = Input.GetAxis("Acceleration");
         float drift = Input.GetAxis("Drift");
+        float stunt = Input.GetAxis("Stunt");
+
+        if (stunt > 0.0f && rollDegrees <= 0.0f)
+        {
+            rollDegrees = 360.0f;
+            if (horz < 0.0f) rollDir = 1;
+            else rollDir = -1;
+        }
+
+        model.RotateAroundLocal(Vector3.forward, -(Mathf.Deg2Rad * rollDegrees * rollDir));
+        rollDegrees *= (0.99f - (360.0f - rollDegrees) / 1800.0f);
+        rollDegrees -= Time.deltaTime * 1.0f + (360.0f - rollDegrees) / 180.0f;
+        if (rollDegrees < 0.0f) rollDegrees = 0.0f;
+        model.RotateAroundLocal(Vector3.forward, (Mathf.Deg2Rad * rollDegrees * rollDir));
 
         //get the current surface
         RaycastHit hit;
