@@ -37,7 +37,7 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: DarkGray
-    second: {fileID: 2100000, guid: 6e871271ed5fd6542b207436fc388d19, type: 2}
+    second: {fileID: 2100000, guid: 4482c16366d57804e8a54319062e8428, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -46,8 +46,18 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: Grill
+    second: {fileID: 2100000, guid: d88b10629ae2d214b8720bcd840dbb37, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: White
-    second: {fileID: 2100000, guid: a9b9259c3f10ba1448a0c285cc5d213b, type: 2}
+    second: {fileID: 2100000, guid: 8350e20adcf5a7b409e265a9960eef4c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Window
+    second: {fileID: 2100000, guid: 8af351cbf1fad1346a439937e9897a66, type: 2}
   materials:
     importMaterials: 1
     materialName: 0
