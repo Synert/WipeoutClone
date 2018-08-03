@@ -36,7 +36,7 @@ public class ShipCustomization : MonoBehaviour {
         }
 	}
 
-    void NewColors(Color newPrimary, Color newSecondary, Color newTrail)
+    public void NewColors(Color newPrimary, Color newSecondary, Color newTrail)
     {
         primary = newPrimary;
         secondary = newSecondary;
@@ -63,8 +63,14 @@ public class ShipCustomization : MonoBehaviour {
             light.color = shipTrail;
         }
 
-        model.GetComponentInChildren<TrailRenderer>().startColor = shipTrail;
+        foreach(TrailRenderer tR in model.GetComponentsInChildren<TrailRenderer>())
+        {
+            tR.startColor = shipTrail;
+        }
 
-        model.GetComponentInChildren<ParticleSystem>().startColor = shipTrail;
+        foreach(ParticleSystem pS in model.GetComponentsInChildren<ParticleSystem>())
+        {
+            pS.startColor = shipTrail;
+        }
     }
 }
