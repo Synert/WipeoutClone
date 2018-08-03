@@ -28,6 +28,9 @@ public class ShipScript : MonoBehaviour
     private float rollDegrees = 0.0f;
     private int rollDir = 0;
 
+    //inputs
+    private float horz, vert, accel, drift, stunt;
+
     private Rigidbody rb;
 
     void Start()
@@ -50,33 +53,30 @@ public class ShipScript : MonoBehaviour
 
     void FixedUpdate()
     {
-        float vel = rb.velocity.sqrMagnitude;
-        vel /= (speed * speed);
+        GetInputs();
+        HoverLogic();
+        StuntLogic();
+        RotationLogic();
+        ApplyForces();
+        CameraFollow();
 
-        rb.AddForce(newGravity * rb.mass);
+        /*Debug.DrawRay(transform.position, -ship.up * desiredHeight, Color.green);
+        Debug.DrawRay(transform.position + ship.up * 5.0f, ship.forward * 5.0f, Color.red);
+        Debug.Log(newGravity);
+        Debug.Log(vel);*/
+    }
 
-        //inputs
-        float horz = Input.GetAxis("Horizontal");
-        float vert = Input.GetAxis("Vertical");
-        if (vert > 1.0f) vert = 1.0f;
-        if (vert < -1.0f) vert = -1.0f;
-        float accel = Input.GetAxis("Acceleration");
-        float drift = Input.GetAxis("Drift");
-        float stunt = Input.GetAxis("Stunt");
+    void GetInputs()
+    {
+        horz = Input.GetAxis("Horizontal");
+        vert = Input.GetAxis("Vertical");
+        accel = Input.GetAxis("Acceleration");
+        drift = Input.GetAxis("Drift");
+        stunt = Input.GetAxis("Stunt");
+    }
 
-        if (stunt > 0.0f && rollDegrees <= 0.0f)
-        {
-            rollDegrees = 360.0f;
-            if (horz < 0.0f) rollDir = 1;
-            else rollDir = -1;
-        }
-
-        model.RotateAroundLocal(Vector3.forward, -(Mathf.Deg2Rad * rollDegrees * rollDir));
-        rollDegrees *= (0.99f - (360.0f - rollDegrees) / 1800.0f);
-        rollDegrees -= Time.deltaTime * 1.0f + (360.0f - rollDegrees) / 180.0f;
-        if (rollDegrees < 0.0f) rollDegrees = 0.0f;
-        model.RotateAroundLocal(Vector3.forward, (Mathf.Deg2Rad * rollDegrees * rollDir));
-
+    void HoverLogic()
+    {
         //get the current surface
         RaycastHit hit;
         if (Physics.Raycast(transform.position, -ship.up, out hit, castDistance))
@@ -122,9 +122,26 @@ public class ShipScript : MonoBehaviour
             newGravity = new Vector3(0.0f, -1.0f, 0.0f);
             newGravity *= gravityScalar;
         }
+    }
 
-        //ship rotation shenanigans
+    void StuntLogic()
+    {
+        if (stunt > 0.0f && rollDegrees <= 0.0f)
+        {
+            rollDegrees = 360.0f;
+            if (horz < 0.0f) rollDir = 1;
+            else rollDir = -1;
+        }
 
+        model.RotateAroundLocal(Vector3.forward, -(Mathf.Deg2Rad * rollDegrees * rollDir));
+        rollDegrees *= (0.99f - (360.0f - rollDegrees) / 1800.0f);
+        rollDegrees -= Time.deltaTime * 1.0f + (360.0f - rollDegrees) / 180.0f;
+        if (rollDegrees < 0.0f) rollDegrees = 0.0f;
+        model.RotateAroundLocal(Vector3.forward, (Mathf.Deg2Rad * rollDegrees * rollDir));
+    }
+
+    void RotationLogic()
+    {
         if (rotatePercentage < vert)
         {
             rotatePercentage += Time.deltaTime * 3.5f;
@@ -172,17 +189,26 @@ public class ShipScript : MonoBehaviour
         prevLean = (Mathf.Deg2Rad * leanPercentage) * (30.0f * (currentSpeed / speed) + 20.0f);
         ship.RotateAroundLocal(ship.right, prevRotate);
         ship.RotateAroundLocal(ship.forward, prevLean);
+    }
+
+    void CameraFollow()
+    {
+        float vel = rb.velocity.sqrMagnitude;
+        vel /= (speed * speed);
 
         Vector3 newPos = transform.position - (15.0f + vel * 12.0f) * ship.forward + 6.0f * ship.up - 1.0f * ship.right;
         Vector3 camVel = Vector3.zero;
         cam.transform.position = Vector3.SmoothDamp(cam.transform.position, newPos, ref camVel, 0.06f);
 
         Quaternion oldRot = cam.transform.rotation;
-        newRot = Quaternion.LookRotation(ship.forward, ship.up);
+        Quaternion newRot = Quaternion.LookRotation(ship.forward, ship.up);
         cam.transform.rotation = Quaternion.Lerp(oldRot, newRot, 5.0f * (1.0f + vel) * Time.deltaTime);
+    }
 
+    void ApplyForces()
+    {
         float desiredSpeed = speed * accel * 1.25f;
-        currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
+        float currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
         float accelForce = (desiredSpeed - currentSpeed);
         rb.AddForce(ship.forward * accelForce * rb.mass);
 
@@ -193,10 +219,7 @@ public class ShipScript : MonoBehaviour
         accelForce *= (1.0f - drift);
         rb.AddForce(ship.right * accelForce * rb.mass);
 
-        /*Debug.DrawRay(transform.position, -ship.up * desiredHeight, Color.green);
-        Debug.DrawRay(transform.position + ship.up * 5.0f, ship.forward * 5.0f, Color.red);
-        Debug.Log(newGravity);
-        Debug.Log(vel);*/
+        rb.AddForce(newGravity * rb.mass);
     }
 
     void Update()
