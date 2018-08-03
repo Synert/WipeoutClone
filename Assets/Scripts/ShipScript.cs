@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ShipScript : MonoBehaviour {
-    
-    //gotta set this in-editor to access the ship's transform/camera
-    [SerializeField] private Transform ship;
-    [SerializeField] private Transform model;
-    [SerializeField] private Camera cam;
+public class ShipScript : MonoBehaviour
+{
+    private Transform ship;
+    private Transform model;
+    private Camera cam;
 
     //controls how the ship handles
     [SerializeField] private float gravityScalar = 19.8f;
@@ -31,9 +30,22 @@ public class ShipScript : MonoBehaviour {
 
     private Rigidbody rb;
 
-    // Use this for initialization
-    void Start () {
+    void Start()
+    {
         rb = GetComponent<Rigidbody>();
+        cam = GetComponentInChildren<Camera>();
+
+        foreach (Transform child in gameObject.GetComponentsInChildren<Transform>())
+        {
+            if(child.gameObject.name == "ShipContainer")
+            {
+                ship = child;
+            }
+            else if (child.gameObject.name == "ShipModel")
+            {
+                model = child;
+            }
+        }
     }
 
     void FixedUpdate()
@@ -181,14 +193,14 @@ public class ShipScript : MonoBehaviour {
         accelForce *= (1.0f - drift);
         rb.AddForce(ship.right * accelForce * rb.mass);
 
-        Debug.DrawRay(transform.position, -ship.up * desiredHeight, Color.green);
+        /*Debug.DrawRay(transform.position, -ship.up * desiredHeight, Color.green);
         Debug.DrawRay(transform.position + ship.up * 5.0f, ship.forward * 5.0f, Color.red);
         Debug.Log(newGravity);
-        Debug.Log(vel);
+        Debug.Log(vel);*/
     }
 
-    // Update is called once per frame
-    void Update () {
+    void Update()
+    {
 
     }
 }
