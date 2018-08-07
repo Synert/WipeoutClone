@@ -2,22 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ShipCustomization : MonoBehaviour {
-
+public class ShipCustomization : MonoBehaviour
+{
     [SerializeField] private Color primary, secondary, trail;
     private Color shipPrimary, shipSecondary, shipTrail;
     private Transform model;
 
-    // Use this for initialization
-    void Start () {
-        foreach (Transform child in gameObject.GetComponentsInChildren<Transform>())
-        {
-            if (child.gameObject.name == "ShipModel")
-            {
-                model = child;
-                break;
-            }
-        }
+    public void Init(Transform shipModel)
+    {
+        model = shipModel;
 
         shipPrimary = primary;
         shipSecondary = secondary;
@@ -25,8 +18,13 @@ public class ShipCustomization : MonoBehaviour {
         UpdateColors();
     }
 	
-	// Update is called once per frame
-	void Update () {
+	void Update()
+    {
+        CheckColors();
+	}
+
+    void CheckColors()
+    {
         if (shipPrimary != primary || shipSecondary != secondary || shipTrail != trail)
         {
             shipPrimary = primary;
@@ -34,13 +32,6 @@ public class ShipCustomization : MonoBehaviour {
             shipTrail = trail;
             UpdateColors();
         }
-	}
-
-    public void NewColors(Color newPrimary, Color newSecondary, Color newTrail)
-    {
-        primary = newPrimary;
-        secondary = newSecondary;
-        trail = newTrail;
     }
 
     void UpdateColors()
@@ -72,5 +63,14 @@ public class ShipCustomization : MonoBehaviour {
         {
             pS.startColor = shipTrail;
         }
+    }
+
+    public void SetColors(Color newPrimary, Color newSecondary, Color newTrail)
+    {
+        primary = newPrimary;
+        secondary = newSecondary;
+        trail = newTrail;
+
+        CheckColors();
     }
 }

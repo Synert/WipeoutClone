@@ -4,17 +4,21 @@ using UnityEngine;
 
 public class ShipScript : MonoBehaviour
 {
-    private Transform ship;
-    private Transform model;
-    private Camera cam;
-
     //controls how the ship handles
+    [Header("Ship Handling")]
     [SerializeField] private float gravityScalar = 19.8f;
     [SerializeField] private float desiredHeight = 3.0f;
     [SerializeField] private float maxForce = 20.0f;
     [SerializeField] private float castDistance = 30.0f;
     [SerializeField] private float speed = 75.0f;
     [SerializeField] private float steerSpeed = 5.0f;
+
+    [Header("Ship Model")]
+    [SerializeField] private GameObject shipPrefab;
+
+    private Transform ship;
+    private Transform model;
+    private Camera cam;
 
     private Vector3 newGravity = new Vector3(0.0f, -1.0f, 0.0f);
 
@@ -31,39 +35,44 @@ public class ShipScript : MonoBehaviour
     //inputs
     private float horz, vert, accel, drift, stunt;
 
+    //HUD
+    ShipHUD HUD;
+
     private Rigidbody rb;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         cam = GetComponentInChildren<Camera>();
+        HUD = GetComponent<ShipHUD>();
 
-        foreach (Transform child in gameObject.GetComponentsInChildren<Transform>())
+        ship = Instantiate(shipPrefab, transform).transform;
+        ship.localPosition = Vector3.zero;
+
+        foreach (Transform child in ship.GetComponentsInChildren<Transform>())
         {
-            if(child.gameObject.name == "ShipContainer")
-            {
-                ship = child;
-            }
-            else if (child.gameObject.name == "ShipModel")
+            if (child.gameObject.name == "ShipModel")
             {
                 model = child;
             }
         }
+
+        GetComponent<ShipCustomization>().Init(model);
+    }
+
+    void Update()
+    {
+        GetInputs();
     }
 
     void FixedUpdate()
     {
-        GetInputs();
         HoverLogic();
         StuntLogic();
         RotationLogic();
-        ApplyForces();
+        Acceleration();
+        //AirBrake();
         CameraFollow();
-
-        /*Debug.DrawRay(transform.position, -ship.up * desiredHeight, Color.green);
-        Debug.DrawRay(transform.position + ship.up * 5.0f, ship.forward * 5.0f, Color.red);
-        Debug.Log(newGravity);
-        Debug.Log(vel);*/
     }
 
     void GetInputs()
@@ -86,7 +95,6 @@ public class ShipScript : MonoBehaviour
             newGravity *= gravityScalar;
 
             float currentUp = Vector3.Dot(rb.velocity, ship.up);
-
             float force = desiredHeight - hit.distance;
 
             if (hit.distance <= desiredHeight)
@@ -119,8 +127,7 @@ public class ShipScript : MonoBehaviour
         else
         {
             //reset to defaults
-            newGravity = new Vector3(0.0f, -1.0f, 0.0f);
-            newGravity *= gravityScalar;
+            newGravity = new Vector3(0.0f, -gravityScalar, 0.0f);
         }
     }
 
@@ -176,6 +183,9 @@ public class ShipScript : MonoBehaviour
 
         ship.RotateAroundLocal(ship.forward, -prevLean);
         ship.RotateAroundLocal(ship.right, -prevRotate);
+
+        float currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
+
         ship.RotateAroundLocal(ship.up, horz * Time.deltaTime * steerSpeed);
 
         Vector3 proj = ship.forward.normalized - (Vector3.Dot(ship.forward, -newGravity.normalized)) * -newGravity.normalized;
@@ -183,7 +193,7 @@ public class ShipScript : MonoBehaviour
         Quaternion finalRot = Quaternion.Lerp(ship.rotation, newRot, 6.0f * Time.deltaTime);
         ship.rotation = finalRot;
 
-        float currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
+        AirBrake();
 
         prevRotate = (Mathf.Deg2Rad * rotatePercentage) * 10.0f;
         prevLean = (Mathf.Deg2Rad * leanPercentage) * (30.0f * (currentSpeed / speed) + 20.0f);
@@ -205,25 +215,22 @@ public class ShipScript : MonoBehaviour
         cam.transform.rotation = Quaternion.Lerp(oldRot, newRot, 5.0f * (1.0f + vel) * Time.deltaTime);
     }
 
-    void ApplyForces()
+    void AirBrake()
+    {
+        //braking to prevent drifts
+        float accelForce = -Vector3.Dot(rb.velocity, ship.right);
+        accelForce *= (1.0f - drift);
+        rb.AddForce(ship.right * accelForce * rb.mass);
+    }
+
+    void Acceleration()
     {
         float desiredSpeed = speed * accel * 1.25f;
         float currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
+        HUD.UpdateSpeed(currentSpeed);
         float accelForce = (desiredSpeed - currentSpeed);
         rb.AddForce(ship.forward * accelForce * rb.mass);
 
-        //braking to prevent drifts
-        desiredSpeed = 0.0f;
-        currentSpeed = Vector3.Dot(rb.velocity, ship.right);
-        accelForce = (desiredSpeed - currentSpeed);
-        accelForce *= (1.0f - drift);
-        rb.AddForce(ship.right * accelForce * rb.mass);
-
         rb.AddForce(newGravity * rb.mass);
-    }
-
-    void Update()
-    {
-
     }
 }
