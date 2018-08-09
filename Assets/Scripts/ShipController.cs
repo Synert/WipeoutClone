@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ShipScript : MonoBehaviour
+public class ShipController : MonoBehaviour
 {
     //controls how the ship handles
     [Header("Ship Handling")]
-    [SerializeField] private float gravityScalar = 19.8f;
     [SerializeField] private float desiredHeight = 3.0f;
-    [SerializeField] private float maxForce = 20.0f;
+    [SerializeField] private float maxHoverForce = 20.0f;
     [SerializeField] private float castDistance = 30.0f;
     [SerializeField] private float speed = 75.0f;
     [SerializeField] private float acceleration = 1.0f;
@@ -22,9 +21,12 @@ public class ShipScript : MonoBehaviour
     private Transform ship;
     private Transform model;
     private Camera cam;
+    private GameManager g_manager;
 
     private Vector3 newGravity = new Vector3(0.0f, -1.0f, 0.0f);
+    private float gravityScalar = 9.8f;
     private float pitchLimit;
+    private int shipID;
 
     //leaning stuff while moving
     private float prevRotate = 0.0f;
@@ -64,7 +66,10 @@ public class ShipScript : MonoBehaviour
         GetComponent<ShipCustomization>().Init(model);
 
         pitchLimit = Mathf.Rad2Deg * Mathf.Asin(pitchSpeedLimit / speed);
-        Debug.Log(pitchLimit);
+
+        g_manager = FindObjectOfType<GameManager>();
+        shipID = g_manager.RegisterShip(this);
+        gravityScalar = g_manager.GetGravity();
     }
 
     void Update()
@@ -106,7 +111,7 @@ public class ShipScript : MonoBehaviour
 
             if (hit.distance <= desiredHeight)
             {
-                force *= (maxForce / desiredHeight);
+                force *= (maxHoverForce / desiredHeight);
                 if (force < 0) force *= -1.0f;
                 force += 1.0f;
 
@@ -253,5 +258,10 @@ public class ShipScript : MonoBehaviour
 
         rb.AddForce(ship.forward * accelForce * rb.mass);
         rb.AddForce(newGravity * rb.mass);
+    }
+
+    public int GetID()
+    {
+        return shipID;
     }
 }
