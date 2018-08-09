@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class ShipHUD : MonoBehaviour
 {
     [SerializeField] private Canvas HUD;
+
     private float speed = 0.0f;
     private Text speedText, posText;
     private GameManager g_manager;
@@ -13,7 +14,7 @@ public class ShipHUD : MonoBehaviour
 
 	void Start()
     {
-        if (!HUD) DestroyImmediate(gameObject);
+        if (!HUD) return;
 
         foreach (Transform child in HUD.GetComponentsInChildren<Transform>())
         {
@@ -38,8 +39,9 @@ public class ShipHUD : MonoBehaviour
 
     void UpdateHUD()
     {
+        if (!HUD) return;
         speedText.text = (speed * 3.6f).ToString("F2") + " KPH";
-        posText.text = g_manager.GetPosition(ship.GetID()).ToString();
+        posText.text = "POS " + g_manager.GetPosition(ship.GetID()).ToString() + "/" + g_manager.GetShipCount();
     }
 
     public void UpdateSpeed(float newSpeed)

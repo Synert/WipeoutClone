@@ -5,6 +5,7 @@ using UnityEngine;
 public class ShipCustomization : MonoBehaviour
 {
     [SerializeField] private Color primary, secondary, trail;
+
     private Color shipPrimary, shipSecondary, shipTrail;
     private Transform model;
 
@@ -38,7 +39,6 @@ public class ShipCustomization : MonoBehaviour
     {
         foreach (Material mat in model.GetComponent<Renderer>().materials)
         {
-            Debug.Log(mat.name);
             if (mat.name == "PrimaryColor (Instance)")
             {
                 mat.color = shipPrimary;

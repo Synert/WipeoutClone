@@ -6,22 +6,28 @@ public class ShipController : MonoBehaviour
 {
     //controls how the ship handles
     [Header("Ship Handling")]
-    [SerializeField] private float desiredHeight = 3.0f;
+    [SerializeField] private float desiredHeight = 5.0f;
     [SerializeField] private float maxHoverForce = 20.0f;
     [SerializeField] private float castDistance = 30.0f;
     [SerializeField] private float speed = 75.0f;
     [SerializeField] private float acceleration = 1.0f;
     [SerializeField] private float deceleration = 1.0f;
-    [SerializeField] private float steerSpeed = 5.0f;
-    [SerializeField] private float pitchSpeedLimit = 10.0f;
+    [SerializeField] private float steerSpeed = 3.0f;
+    [SerializeField] private float pitchSpeedLimit = 10.0f; //the maximum up/downforce you can get from pitching the ship
 
     [Header("Ship Model")]
     [SerializeField] private GameObject shipPrefab;
 
-    private Transform ship;
-    private Transform model;
+    [Header("Camera Settings")]
+    [SerializeField] private float camBackInit = 15.0f; //how much distance you start with
+    [SerializeField] private float camBackExtra = 12.0f; //how much more you get at full speed
+    [SerializeField] private float camRight = -1.0f;
+    [SerializeField] private float camUp = 6.0f;
+
+    private Transform ship, model;
     private Camera cam;
     private GameManager g_manager;
+    private Rigidbody rb;
 
     private Vector3 newGravity = new Vector3(0.0f, -1.0f, 0.0f);
     private float gravityScalar = 9.8f;
@@ -29,10 +35,7 @@ public class ShipController : MonoBehaviour
     private int shipID;
 
     //leaning stuff while moving
-    private float prevRotate = 0.0f;
-    private float prevLean = 0.0f;
-    private float rotatePercentage = 0.0f;
-    private float leanPercentage = 0.0f;
+    private float prevRotate, prevLean, rotatePercentage, leanPercentage;
 
     //do a barrel roll
     private float rollDegrees = 0.0f;
@@ -43,8 +46,6 @@ public class ShipController : MonoBehaviour
 
     //HUD
     ShipHUD HUD;
-
-    private Rigidbody rb;
 
     void Start()
     {
@@ -226,7 +227,7 @@ public class ShipController : MonoBehaviour
         float vel = rb.velocity.sqrMagnitude;
         vel /= (speed * speed);
 
-        Vector3 newPos = transform.position - (15.0f + vel * 12.0f) * ship.forward + 6.0f * ship.up - 1.0f * ship.right;
+        Vector3 newPos = transform.position - (camBackInit + vel * camBackExtra) * ship.forward + camUp * ship.up + camRight * ship.right;
         Vector3 camVel = Vector3.zero;
         cam.transform.position = Vector3.SmoothDamp(cam.transform.position, newPos, ref camVel, 0.06f);
 

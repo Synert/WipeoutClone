@@ -8,18 +8,28 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float gravityScalar = 19.8f;
 
     private int numShips = 0;
-    private List<int> numCheckPoints;
     private List<ShipController> ships;
+    private List<int> shipLapCheckPoints, shipCheckPoints, shipPositions;
+    private bool hasInit = false;
 
     void Start()
     {
-        numCheckPoints = new List<int>();
+        Init();
+    }
+
+    void Init()
+    {
+        if (hasInit) return;
+        else hasInit = true;
         ships = new List<ShipController>();
-	}
+        shipLapCheckPoints = new List<int>();
+        shipCheckPoints = new List<int>();
+        shipPositions = new List<int>();
+    }
 	
 	void Update()
     {
-		
+        SortPositions();
 	}
 
     public float GetGravity()
@@ -29,29 +39,38 @@ public class GameManager : MonoBehaviour
 
     public int RegisterShip(ShipController ship)
     {
-        numCheckPoints.Add(0);
+        Init();
         ships.Add(ship);
+        shipCheckPoints.Add(0);
+        shipLapCheckPoints.Add(0);
+        shipPositions.Add(numShips);
         numShips++;
         return numShips - 1;
     }
 
     public int GetPosition(int shipID)
     {
-        int position = 1;
-        List<int> samePos;
-        samePos = new List<int>();
         for(int i = 0; i < numShips; i++)
         {
-            if (i == shipID) continue;
-            if (numCheckPoints[i] > numCheckPoints[shipID]) position++;
-            else if(numCheckPoints[i] == numCheckPoints[shipID]) samePos.Add(i);
+            if(shipPositions[i] == shipID) return i + 1;
         }
+        return -1;
+    }
 
-        for(int i = 0; i < samePos.Count; i++)
-        {
-            //do the distance checking here when checkpoints actually exist
-        }
+    void SortPositions()
+    {
+        shipPositions.Sort(ComparePositions);
+    }
 
-        return position;
+    int ComparePositions(int x, int y)
+    {
+        if (x == y) return 0;
+        if(shipCheckPoints[x] > shipCheckPoints[y]) return 1;
+        return -1;
+    }
+
+    public int GetShipCount()
+    {
+        return numShips;
     }
 }
