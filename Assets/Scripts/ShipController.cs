@@ -11,9 +11,11 @@ public class ShipController : MonoBehaviour
     [SerializeField] private float castDistance = 30.0f;
     [SerializeField] private float speed = 75.0f;
     [SerializeField] private float acceleration = 1.0f;
-    [SerializeField] private float deceleration = 1.0f;
+    [SerializeField] private float deceleration = 0.5f;
+    [SerializeField] private float airBrake = 1.0f;
     [SerializeField] private float steerSpeed = 3.0f;
     [SerializeField] private float pitchSpeedLimit = 10.0f; //the maximum up/downforce you can get from pitching the ship
+    [SerializeField] private bool driftForward = true;
 
     [Header("Ship Model")]
     [SerializeField] private GameObject shipPrefab;
@@ -239,23 +241,23 @@ public class ShipController : MonoBehaviour
     void AirBrake()
     {
         //braking to prevent drifts
-        float accelForce = -Vector3.Dot(rb.velocity, ship.right);
+        float accelForce = -Vector3.Dot(rb.velocity, ship.right) * airBrake;
         accelForce *= (1.0f - drift);
         rb.AddForce(ship.right * accelForce * rb.mass);
     }
 
     void Acceleration()
     {
-        float desiredSpeed = speed * accel * (1.0f + rb.drag * acceleration);
+        float desiredSpeed = speed * accel * (1.0f + rb.drag / acceleration);
         float currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
         HUD.UpdateSpeed(currentSpeed);
-
         float accelForce = (desiredSpeed - currentSpeed);
-        if (accelForce > 0.0f || accel < 0.0f) accelForce /= acceleration;
-        else accelForce /= deceleration;
-        //accelForce *= (Time.fixedDeltaTime / acceleration);
-
-        //acceleration = 1.0f / acceleration;
+        if (accelForce > 0.0f || accel < 0.0f) accelForce *= acceleration;
+        else
+        {
+            if (drift > 0.0f && driftForward) accelForce = 0.0f;
+            accelForce *= deceleration;
+        }
 
         rb.AddForce(ship.forward * accelForce * rb.mass);
         rb.AddForce(newGravity * rb.mass);
@@ -264,5 +266,10 @@ public class ShipController : MonoBehaviour
     public int GetID()
     {
         return shipID;
+    }
+
+    public float GetMaxSpeed()
+    {
+        return speed;
     }
 }
