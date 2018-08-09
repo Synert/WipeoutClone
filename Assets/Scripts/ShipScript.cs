@@ -11,7 +11,9 @@ public class ShipScript : MonoBehaviour
     [SerializeField] private float maxForce = 20.0f;
     [SerializeField] private float castDistance = 30.0f;
     [SerializeField] private float speed = 75.0f;
+    [SerializeField] private float acceleration = 1.0f;
     [SerializeField] private float steerSpeed = 5.0f;
+    [SerializeField] private float pitchSpeedLimit = 10.0f;
 
     [Header("Ship Model")]
     [SerializeField] private GameObject shipPrefab;
@@ -21,6 +23,7 @@ public class ShipScript : MonoBehaviour
     private Camera cam;
 
     private Vector3 newGravity = new Vector3(0.0f, -1.0f, 0.0f);
+    private float pitchLimit;
 
     //leaning stuff while moving
     private float prevRotate = 0.0f;
@@ -58,6 +61,9 @@ public class ShipScript : MonoBehaviour
         }
 
         GetComponent<ShipCustomization>().Init(model);
+
+        pitchLimit = Mathf.Rad2Deg * Mathf.Asin(pitchSpeedLimit / speed);
+        Debug.Log(pitchLimit);
     }
 
     void Update()
@@ -195,7 +201,7 @@ public class ShipScript : MonoBehaviour
 
         AirBrake();
 
-        prevRotate = (Mathf.Deg2Rad * rotatePercentage) * 10.0f;
+        prevRotate = (Mathf.Deg2Rad * rotatePercentage) * pitchLimit;
         prevLean = (Mathf.Deg2Rad * leanPercentage) * (30.0f * (currentSpeed / speed) + 20.0f);
         ship.RotateAroundLocal(ship.right, prevRotate);
         ship.RotateAroundLocal(ship.forward, prevLean);
@@ -225,12 +231,17 @@ public class ShipScript : MonoBehaviour
 
     void Acceleration()
     {
-        float desiredSpeed = speed * accel * 1.25f;
+        float desiredSpeed = speed * accel * (1.0f + 0.25f * acceleration);
         float currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
         HUD.UpdateSpeed(currentSpeed);
-        float accelForce = (desiredSpeed - currentSpeed);
-        rb.AddForce(ship.forward * accelForce * rb.mass);
 
+        float accelForce = (desiredSpeed - currentSpeed);
+        accelForce /= acceleration;
+        //accelForce *= (Time.fixedDeltaTime / acceleration);
+
+        //acceleration = 1.0f / acceleration;
+
+        rb.AddForce(ship.forward * accelForce * rb.mass);
         rb.AddForce(newGravity * rb.mass);
     }
 }
