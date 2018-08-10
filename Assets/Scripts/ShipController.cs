@@ -248,9 +248,12 @@ public class ShipController : MonoBehaviour
 
     void Acceleration()
     {
-        float desiredSpeed = speed * accel * (1.0f + rb.drag / acceleration);
         float currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
         HUD.UpdateSpeed(currentSpeed);
+
+        if (accel == 0.0f && drift > 0.0f && driftForward) return;
+
+        float desiredSpeed = speed * accel * (1.0f + rb.drag / acceleration);
         float accelForce = (desiredSpeed - currentSpeed);
         if (accelForce > 0.0f || accel < 0.0f) accelForce *= acceleration;
         else
