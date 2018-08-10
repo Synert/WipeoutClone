@@ -10,6 +10,7 @@ public class ShipController : MonoBehaviour
     [SerializeField] private float maxHoverForce = 20.0f;
     [SerializeField] private float castDistance = 30.0f;
     [SerializeField] private float speed = 75.0f;
+    [SerializeField] private float reverseSpeed = 75.0f;
     [SerializeField] private float acceleration = 1.0f;
     [SerializeField] private float deceleration = 0.5f;
     [SerializeField] private float airBrake = 1.0f;
@@ -252,8 +253,12 @@ public class ShipController : MonoBehaviour
         HUD.UpdateSpeed(currentSpeed);
 
         if (accel == 0.0f && drift > 0.0f && driftForward) return;
+        if ((accel > 0.0f && currentSpeed > speed) || (accel < 0.0f && currentSpeed < -speed)) return; //for booster pads
 
-        float desiredSpeed = speed * accel * (1.0f + rb.drag / acceleration);
+        float desiredSpeed = 0.0f;
+        if(accel > 0.0f) desiredSpeed = speed * accel * (1.0f + rb.drag / acceleration);
+        else desiredSpeed = reverseSpeed * accel * (1.0f + rb.drag / acceleration);
+
         float accelForce = (desiredSpeed - currentSpeed);
         if (accelForce > 0.0f || accel < 0.0f) accelForce *= acceleration;
         else
