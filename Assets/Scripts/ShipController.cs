@@ -249,6 +249,8 @@ public class ShipController : MonoBehaviour
 
     void Acceleration()
     {
+        rb.AddForce(newGravity * rb.mass);
+
         float currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
         HUD.UpdateSpeed(currentSpeed);
 
@@ -268,7 +270,6 @@ public class ShipController : MonoBehaviour
         }
 
         rb.AddForce(ship.forward * accelForce * rb.mass);
-        rb.AddForce(newGravity * rb.mass);
     }
 
     public int GetID()

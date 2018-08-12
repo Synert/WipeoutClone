@@ -8,7 +8,7 @@ public class ShipHUD : MonoBehaviour
     [SerializeField] private Canvas HUD;
 
     private float speed = 0.0f;
-    private Text speedText, posText;
+    private Text speedText, posText, lapText;
     private GameManager g_manager;
     private ShipController ship;
 
@@ -26,6 +26,10 @@ public class ShipHUD : MonoBehaviour
             {
                 posText = child.GetComponent<Text>();
             }
+            else if (child.gameObject.name == "Lap")
+            {
+                lapText = child.GetComponent<Text>();
+            }
         }
 
         g_manager = FindObjectOfType<GameManager>();
@@ -42,6 +46,7 @@ public class ShipHUD : MonoBehaviour
         if (!HUD) return;
         speedText.text = (speed * 3.6f).ToString("F2") + " KPH";
         posText.text = "POS " + g_manager.GetPosition(ship.GetID()).ToString() + "/" + g_manager.GetShipCount();
+        lapText.text = "LAP " + g_manager.GetLaps(ship.GetID()).ToString();
     }
 
     public void UpdateSpeed(float newSpeed)
