@@ -24,7 +24,7 @@ public class ShipDamage : MonoBehaviour
             newSparks.transform.position = contact.point;
             newSparks.transform.LookAt(transform);
             //newSparks.transform.rotation = Quaternion.Euler(contact.normal);
-            newSparks.GetComponent<ParticleSystem>().startSpeed = 15.0f + collision.relativeVelocity.sqrMagnitude * 0.01f;
+            newSparks.GetComponent<ParticleSystem>().startSpeed = 15.0f + collision.relativeVelocity.sqrMagnitude * 0.005f;
         }
     }
 
