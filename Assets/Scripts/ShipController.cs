@@ -205,12 +205,12 @@ public class ShipController : MonoBehaviour
             }
         }
 
-        ship.RotateAroundLocal(ship.forward, -prevLean);
-        ship.RotateAroundLocal(ship.right, -prevRotate);
+        ship.RotateAround(ship.forward, -prevLean);
+        ship.RotateAround(ship.right, -prevRotate);
 
         float currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
 
-        ship.RotateAroundLocal(ship.up, horz * Time.deltaTime * steerSpeed);
+        ship.RotateAround(ship.up, horz * steerSpeed * Time.deltaTime);
 
         Vector3 proj = ship.forward.normalized - (Vector3.Dot(ship.forward, -newGravity.normalized)) * -newGravity.normalized;
         Quaternion newRot = Quaternion.LookRotation(proj.normalized, -newGravity.normalized);
@@ -221,8 +221,8 @@ public class ShipController : MonoBehaviour
 
         prevRotate = (Mathf.Deg2Rad * rotatePercentage) * pitchLimit;
         prevLean = (Mathf.Deg2Rad * leanPercentage) * (30.0f * (currentSpeed / speed) + 20.0f);
-        ship.RotateAroundLocal(ship.right, prevRotate);
-        ship.RotateAroundLocal(ship.forward, prevLean);
+        ship.RotateAround(ship.right, prevRotate);
+        ship.RotateAround(ship.forward, prevLean);
     }
 
     void CameraFollow()
@@ -249,7 +249,7 @@ public class ShipController : MonoBehaviour
 
     void Acceleration()
     {
-        rb.AddForce(newGravity * rb.mass);
+        rb.AddForce(newGravity * rb.mass * (1.0f + rb.drag));
 
         float currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
         HUD.UpdateSpeed(currentSpeed);
