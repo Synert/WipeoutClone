@@ -20,11 +20,11 @@ public class ShipDamage : MonoBehaviour
     {
         foreach (ContactPoint contact in collision.contacts)
         {
-            GameObject newSparks = Instantiate(sparks);
+            GameObject newSparks = Instantiate(sparks, transform);
             newSparks.transform.position = contact.point;
             newSparks.transform.LookAt(transform);
             //newSparks.transform.rotation = Quaternion.Euler(contact.normal);
-            newSparks.GetComponent<ParticleSystem>().startSpeed = 25.0f + collision.relativeVelocity.sqrMagnitude * 0.01f;
+            newSparks.GetComponent<ParticleSystem>().startSpeed = 35.0f + collision.relativeVelocity.sqrMagnitude * 0.015f;
         }
     }
 
@@ -34,7 +34,7 @@ public class ShipDamage : MonoBehaviour
         {
             foreach (ContactPoint contact in collision.contacts)
             {
-                GameObject newSparks = Instantiate(smallSparks);
+                GameObject newSparks = Instantiate(smallSparks, transform);
                 newSparks.transform.position = contact.point;
                 newSparks.transform.LookAt(transform);
                 //newSparks.transform.rotation = Quaternion.Euler(contact.normal);
