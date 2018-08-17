@@ -158,7 +158,7 @@ public class ShipController : MonoBehaviour
 
         model.RotateAroundLocal(Vector3.forward, -(Mathf.Deg2Rad * rollDegrees * rollDir));
         rollDegrees *= (0.99f - (360.0f - rollDegrees) / 1800.0f);
-        rollDegrees -= Time.deltaTime * 1.0f + (360.0f - rollDegrees) / 180.0f;
+        rollDegrees -= Time.fixedDeltaTime * 1.0f + (360.0f - rollDegrees) / 180.0f;
         if (rollDegrees < 0.0f) rollDegrees = 0.0f;
         model.RotateAroundLocal(Vector3.forward, (Mathf.Deg2Rad * rollDegrees * rollDir));
     }
@@ -167,25 +167,25 @@ public class ShipController : MonoBehaviour
     {
         if (rotatePercentage < vert)
         {
-            rotatePercentage += Time.deltaTime * 3.5f;
+            rotatePercentage += Time.fixedDeltaTime * 3.5f;
         }
         else if (rotatePercentage > vert)
         {
-            rotatePercentage -= Time.deltaTime * 3.5f;
+            rotatePercentage -= Time.fixedDeltaTime * 3.5f;
         }
 
         if (leanPercentage < horz)
         {
             if (horz <= 0.0f)
             {
-                leanPercentage += Time.deltaTime * 1.1f;
+                leanPercentage += Time.fixedDeltaTime * 1.1f;
             }
             else
             {
-                leanPercentage += Time.deltaTime * 1.5f;
+                leanPercentage += Time.fixedDeltaTime * 1.5f;
                 if (leanPercentage < 0.0f)
                 {
-                    leanPercentage += Time.deltaTime * 1.1f;
+                    leanPercentage += Time.fixedDeltaTime * 1.1f;
                 }
             }
         }
@@ -193,14 +193,14 @@ public class ShipController : MonoBehaviour
         {
             if (horz >= 0.0f)
             {
-                leanPercentage -= Time.deltaTime * 1.1f;
+                leanPercentage -= Time.fixedDeltaTime * 1.1f;
             }
             else
             {
-                leanPercentage -= Time.deltaTime * 1.5f;
+                leanPercentage -= Time.fixedDeltaTime * 1.5f;
                 if (leanPercentage > 0.0f)
                 {
-                    leanPercentage -= Time.deltaTime * 1.1f;
+                    leanPercentage -= Time.fixedDeltaTime * 1.1f;
                 }
             }
         }
@@ -210,11 +210,11 @@ public class ShipController : MonoBehaviour
 
         float currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
 
-        ship.RotateAround(ship.up, horz * steerSpeed * Time.deltaTime);
+        ship.RotateAround(ship.up, horz * steerSpeed * Time.fixedDeltaTime);
 
         Vector3 proj = ship.forward.normalized - (Vector3.Dot(ship.forward, -newGravity.normalized)) * -newGravity.normalized;
         Quaternion newRot = Quaternion.LookRotation(proj.normalized, -newGravity.normalized);
-        Quaternion finalRot = Quaternion.Lerp(ship.rotation, newRot, 6.0f * Time.deltaTime);
+        Quaternion finalRot = Quaternion.Lerp(ship.rotation, newRot, 6.0f * Time.fixedDeltaTime);
         ship.rotation = finalRot;
 
         AirBrake();
@@ -236,7 +236,7 @@ public class ShipController : MonoBehaviour
 
         Quaternion oldRot = cam.transform.rotation;
         Quaternion newRot = Quaternion.LookRotation(ship.forward, ship.up);
-        cam.transform.rotation = Quaternion.Lerp(oldRot, newRot, 5.0f * (1.0f + vel) * Time.deltaTime);
+        cam.transform.rotation = Quaternion.Lerp(oldRot, newRot, 5.0f * (1.0f + vel) * Time.fixedDeltaTime);
     }
 
     void AirBrake()
