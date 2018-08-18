@@ -104,7 +104,7 @@ public class ShipController : MonoBehaviour
     {
         //get the current surface
         RaycastHit hit;
-        if (Physics.Raycast(transform.position, -ship.up, out hit, castDistance))
+        if (Physics.Raycast(transform.position, newGravity, out hit, castDistance))
         {
             //adjust gravity to new surface
             newGravity = -hit.normal.normalized;
