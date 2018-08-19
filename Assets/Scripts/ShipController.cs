@@ -26,6 +26,8 @@ public class ShipController : MonoBehaviour
     [SerializeField] private float camBackExtra = 12.0f; //how much more you get at full speed
     [SerializeField] private float camRight = -1.0f;
     [SerializeField] private float camUp = 6.0f;
+    [SerializeField] private float camRotate = 0.25f; //how much it looks up/down towards the ship
+    [SerializeField] private GameObject camPrefab;
 
     private Transform ship, model;
     private Camera cam;
@@ -53,7 +55,7 @@ public class ShipController : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        cam = GetComponentInChildren<Camera>();
+        cam = Instantiate(camPrefab, transform.position, transform.rotation).GetComponentInChildren<Camera>();
         HUD = GetComponent<ShipHUD>();
 
         ship = Instantiate(shipPrefab, transform).transform;
@@ -102,6 +104,7 @@ public class ShipController : MonoBehaviour
 
     void HoverLogic()
     {
+        Debug.DrawLine(transform.position, transform.position + newGravity.normalized * desiredHeight, Color.blue);
         //get the current surface
         RaycastHit hit;
         if (Physics.Raycast(transform.position, newGravity, out hit, castDistance))
@@ -230,12 +233,23 @@ public class ShipController : MonoBehaviour
         float vel = rb.velocity.sqrMagnitude;
         vel /= (speed * speed);
 
+        Vector3 diff = cam.transform.position - ship.transform.position;
+        float x = diff.magnitude;
+        float y = Vector3.Dot(diff, ship.up);
+        int mult = 1;
+        if (y < 0.0f) mult = -1;
+
         Vector3 newPos = transform.position - (camBackInit + vel * camBackExtra) * ship.forward + camUp * ship.up + camRight * ship.right;
         Vector3 camVel = Vector3.zero;
         cam.transform.position = Vector3.SmoothDamp(cam.transform.position, newPos, ref camVel, 0.06f);
 
         Quaternion oldRot = cam.transform.rotation;
         Quaternion newRot = Quaternion.LookRotation(ship.forward, ship.up);
+
+        float angle = Mathf.Asin(y / x) * Mathf.Rad2Deg;
+        angle *= camRotate * mult;
+
+        newRot = Quaternion.Lerp(newRot, Quaternion.LookRotation(-ship.up * mult, ship.forward * mult), angle / 90.0f);
         cam.transform.rotation = Quaternion.Lerp(oldRot, newRot, 5.0f * (1.0f + vel) * Time.fixedDeltaTime);
     }
 

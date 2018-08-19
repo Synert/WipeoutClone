@@ -31,7 +31,7 @@ public class Pad : MonoBehaviour
 
     void BoosterPad(ShipController ship)
     {
-        ship.GetComponent<Rigidbody>().AddForce(transform.forward * (flatBoost + ship.GetMaxSpeed() * percentBoost) * 0.01f, ForceMode.VelocityChange);
+        ship.GetComponent<Rigidbody>().AddForce(transform.forward * (flatBoost + ship.GetMaxSpeed() * percentBoost) * Time.fixedDeltaTime, ForceMode.VelocityChange);
     }
 
     void WeaponPad(ShipController ship)
