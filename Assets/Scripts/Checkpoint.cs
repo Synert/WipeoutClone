@@ -11,7 +11,7 @@ public class Checkpoint : MonoBehaviour
 	void Start()
     {
         g_manager = FindObjectOfType<GameManager>();
-        g_manager.RegisterCheckpoint(checkpointID);
+        g_manager.RegisterCheckpoint(checkpointID, this);
 	}
 	
 	// Update is called once per frame
@@ -28,5 +28,10 @@ public class Checkpoint : MonoBehaviour
         {
             g_manager.Checkpoint(ship.GetID(), checkpointID);
         }
+    }
+
+    public int GetID()
+    {
+        return checkpointID;
     }
 }

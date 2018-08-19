@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
     private int checkpointHighest = 0;
     private List<ShipController> ships;
     private List<int> shipCheckpoints, shipPositions;
+    private List<Checkpoint> checkpoints;
     private bool hasInit = false;
 
     void Start()
@@ -26,6 +27,7 @@ public class GameManager : MonoBehaviour
         ships = new List<ShipController>();
         shipCheckpoints = new List<int>();
         shipPositions = new List<int>();
+        checkpoints = new List<Checkpoint>();
     }
 	
 	void Update()
@@ -52,7 +54,7 @@ public class GameManager : MonoBehaviour
     {
         for(int i = 0; i < numShips; i++)
         {
-            if(shipPositions[i] == shipID) return i + 1;
+            if(shipPositions[i] == shipID) return (numShips - i);
         }
         return -1;
     }
@@ -66,6 +68,22 @@ public class GameManager : MonoBehaviour
     {
         if (x == y) return 0;
         if(shipCheckpoints[x] > shipCheckpoints[y]) return 1;
+        else if(shipCheckpoints[x] == shipCheckpoints[y])
+        {
+            float distX = 900000.0f;
+            float distY = 900000.0f;
+            foreach(Checkpoint cp in checkpoints)
+            {
+                if(cp.GetID() == (shipCheckpoints[x] + 1) % checkpointHighest)
+                {
+                    float dist = Vector3.Distance(ships[x].transform.position, cp.transform.position);
+                    if (dist < distX) distX = dist;
+                    dist = Vector3.Distance(ships[y].transform.position, cp.transform.position);
+                    if (dist < distY) distY = dist;
+                }
+            }
+            if (distX < distY) return 1;
+        }
         return -1;
     }
 
@@ -74,10 +92,11 @@ public class GameManager : MonoBehaviour
         return numShips;
     }
     
-    public void RegisterCheckpoint(int checkpointID)
+    public void RegisterCheckpoint(int checkpointID, Checkpoint checkpoint)
     {
         checkpointTotal++;
         if (checkpointID > checkpointHighest) checkpointHighest = checkpointID;
+        checkpoints.Add(checkpoint);
     }
 
     public void Checkpoint(int shipID, int checkpointID)
