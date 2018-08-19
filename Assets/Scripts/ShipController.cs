@@ -27,9 +27,11 @@ public class ShipController : MonoBehaviour
     [SerializeField] private float camRight = -1.0f;
     [SerializeField] private float camUp = 6.0f;
     [SerializeField] private float camRotate = 0.25f; //how much it looks up/down towards the ship
+    [SerializeField] private float camSmoothing = 0.5f;
     [SerializeField] private GameObject camPrefab;
+    [SerializeField] private Transform camSpot;
 
-    private Transform ship, model;
+    private Transform ship, model, camSmooth, camSnappy;
     private Camera cam;
     private GameManager g_manager;
     private Rigidbody rb;
@@ -60,6 +62,9 @@ public class ShipController : MonoBehaviour
 
         ship = Instantiate(shipPrefab, transform).transform;
         ship.localPosition = Vector3.zero;
+
+        camSmooth = Instantiate(camSpot, transform.position, transform.rotation);
+        camSnappy = Instantiate(camSpot, transform);
 
         foreach (Transform child in ship.GetComponentsInChildren<Transform>())
         {
@@ -241,7 +246,9 @@ public class ShipController : MonoBehaviour
 
         Vector3 newPos = transform.position - (camBackInit + vel * camBackExtra) * ship.forward + camUp * ship.up + camRight * ship.right;
         Vector3 camVel = Vector3.zero;
-        cam.transform.position = Vector3.SmoothDamp(cam.transform.position, newPos, ref camVel, 0.06f);
+        camSmooth.position = Vector3.SmoothDamp(cam.transform.position, newPos, ref camVel, 0.06f);
+        camSnappy.position = Vector3.SmoothDamp(cam.transform.position, newPos, ref camVel, 0.06f);
+        cam.transform.position = Vector3.Lerp(camSnappy.position, camSmooth.position, camSmoothing);
 
         Quaternion oldRot = cam.transform.rotation;
         Quaternion newRot = Quaternion.LookRotation(ship.forward, ship.up);
