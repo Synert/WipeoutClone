@@ -51,6 +51,10 @@ public class ShipController : MonoBehaviour
     //inputs
     private float horz, vert, accel, drift, stunt;
 
+    //camera controls
+    private float inputAngle, cameraAngle;
+    private Vector3 prevPos, prevUp;
+
     //HUD
     ShipHUD HUD;
 
@@ -81,6 +85,8 @@ public class ShipController : MonoBehaviour
         g_manager = FindObjectOfType<GameManager>();
         shipID = g_manager.RegisterShip(this);
         gravityScalar = g_manager.GetGravity();
+        prevPos = ship.position;
+        prevUp = ship.up;
     }
 
     void Update()
@@ -105,6 +111,8 @@ public class ShipController : MonoBehaviour
         accel = Input.GetAxis("Acceleration");
         drift = Input.GetAxis("Drift");
         stunt = Input.GetAxis("Stunt");
+
+        inputAngle = Mathf.Atan2(Input.GetAxis("RightX"), Input.GetAxis("RightY")) * Mathf.Rad2Deg;
     }
 
     void HoverLogic()
@@ -235,6 +243,12 @@ public class ShipController : MonoBehaviour
 
     void CameraFollow()
     {
+        cam.transform.RotateAround(prevPos, prevUp, -cameraAngle);
+        float dist = inputAngle - cameraAngle;
+        if (dist >= 180.0f) cameraAngle += 360.0f;
+        if (dist <= -180.0f) cameraAngle -= 360.0f;
+        cameraAngle = Mathf.Lerp(cameraAngle, inputAngle, 0.15f);
+
         float vel = rb.velocity.sqrMagnitude;
         vel /= (speed * speed);
 
@@ -259,6 +273,10 @@ public class ShipController : MonoBehaviour
 
         newRot = Quaternion.Lerp(newRot, Quaternion.LookRotation(-ship.up * mult, ship.forward * mult), angle / 90.0f);
         cam.transform.rotation = Quaternion.Lerp(oldRot, newRot, 5.0f * (1.0f + vel) * Time.fixedDeltaTime);
+
+        cam.transform.RotateAround(ship.position, prevUp, cameraAngle);
+        prevPos = ship.position;
+        prevUp = Vector3.Lerp(prevUp, ship.up, 0.15f);
     }
 
     void AirBrake()
