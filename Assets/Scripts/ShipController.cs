@@ -246,8 +246,9 @@ public class ShipController : MonoBehaviour
 
         Vector3 newPos = transform.position - (camBackInit + vel * camBackExtra) * ship.forward + camUp * ship.up + camRight * ship.right;
         Vector3 camVel = Vector3.zero;
-        camSmooth.position = Vector3.SmoothDamp(cam.transform.position, newPos, ref camVel, 0.06f);
-        camSnappy.position = Vector3.SmoothDamp(cam.transform.position, newPos, ref camVel, 0.06f);
+        camSmooth.position = Vector3.SmoothDamp(camSmooth.position, newPos, ref camVel, 0.06f);
+        camVel = Vector3.zero;
+        camSnappy.position = Vector3.SmoothDamp(camSnappy.position, newPos, ref camVel, 0.06f);
         cam.transform.position = Vector3.Lerp(camSnappy.position, camSmooth.position, camSmoothing);
 
         Quaternion oldRot = cam.transform.rotation;

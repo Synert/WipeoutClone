@@ -94,6 +94,7 @@ public class GameManager : MonoBehaviour
     
     public void RegisterCheckpoint(int checkpointID, Checkpoint checkpoint)
     {
+        Init();
         checkpointTotal++;
         if (checkpointID > checkpointHighest) checkpointHighest = checkpointID;
         checkpoints.Add(checkpoint);
