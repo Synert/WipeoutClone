@@ -15,6 +15,8 @@ public class ShipController : MonoBehaviour
     [SerializeField] private float deceleration = 0.5f;
     [SerializeField] private float airBrake = 1.0f;
     [SerializeField] private float steerSpeed = 3.0f;
+    [SerializeField] private float steerMomentum = 0.5f;
+    [SerializeField] private float forwardMomentum = 0.0f; //this option's a bit broken right now
     [SerializeField] private float pitchSpeedLimit = 10.0f; //the maximum up/downforce you can get from pitching the ship
     [SerializeField] private bool driftForward = true;
 
@@ -224,9 +226,27 @@ public class ShipController : MonoBehaviour
         ship.RotateAround(ship.forward, -prevLean);
         ship.RotateAround(ship.right, -prevRotate);
 
+        //keep the forward momentum after turning
         float currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
+        Vector3 oldPos = ship.position;
+        Quaternion oldRot = ship.rotation;
+
+        ship.position = rb.velocity;
+        ship.RotateAround(Vector3.zero, ship.up, horz * steerSpeed);
+        rb.velocity = Vector3.Lerp(rb.velocity, ship.position, steerMomentum);
+        ship.position = oldPos;
+        ship.rotation = oldRot;
 
         ship.RotateAround(ship.up, horz * steerSpeed * Time.fixedDeltaTime);
+
+        Vector3 vel = rb.velocity;
+        Vector3 speedUp = Vector3.Project(vel, ship.up);
+        Vector3 speedRight = Vector3.Project(vel, ship.right);
+        Vector3 speedFwd = Vector3.Project(vel, ship.forward);
+
+        speedFwd = speedFwd.normalized * currentSpeed;
+        vel = speedUp + speedRight + speedFwd;
+        rb.velocity = Vector3.Lerp(rb.velocity, vel, forwardMomentum);
 
         Vector3 proj = ship.forward.normalized - (Vector3.Dot(ship.forward, -newGravity.normalized)) * -newGravity.normalized;
         Quaternion newRot = Quaternion.LookRotation(proj.normalized, -newGravity.normalized);
