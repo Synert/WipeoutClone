@@ -244,7 +244,7 @@ public class ShipController : MonoBehaviour
         Vector3 speedRight = Vector3.Project(vel, ship.right);
         Vector3 speedFwd = Vector3.Project(vel, ship.forward);
 
-        speedFwd = speedFwd.normalized * currentSpeed;
+        speedFwd = speedFwd.normalized * Mathf.Abs(currentSpeed);
         vel = speedUp + speedRight + speedFwd;
         rb.velocity = Vector3.Lerp(rb.velocity, vel, forwardMomentum);
 
