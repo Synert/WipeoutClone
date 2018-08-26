@@ -313,6 +313,7 @@ public class ShipController : MonoBehaviour
 
         float currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
         HUD.UpdateSpeed(currentSpeed);
+        HUD.UpdateMomentum(rb.velocity.magnitude);
 
         if (accel == 0.0f && drift > 0.0f && driftForward) return;
         if ((accel > 0.0f && currentSpeed > speed) || (accel < 0.0f && currentSpeed < -speed)) return; //for booster pads
