@@ -1,57 +1,21 @@
 fileFormatVersion: 2
-guid: da2877f295ee46e458511ec45210efbf
+guid: e6861ca45207b044a876b8f2ccae8d6c
 ModelImporter:
   serializedVersion: 23
   fileIDToRecycleName:
     100000: //RootNode
     400000: //RootNode
-    2100000: PrimaryColor
-    2100002: SecondaryColor
-    2100004: Window
-    2100006: Grill
-    2100008: Gray
+    2100000: Grill
+    2100002: Window
+    2100004: Gray
+    2100006: SecondaryColor
+    2100008: PrimaryColor
     2100010: DarkGray
     2100012: White
     2300000: //RootNode
     3300000: //RootNode
     4300000: Cube
-    2186277476908879412: ImportLogs
-  externalObjects:
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: DarkGray
-    second: {fileID: 2100000, guid: 4482c16366d57804e8a54319062e8428, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Gray
-    second: {fileID: 2100000, guid: 8f59fc49673ff4742b5ca36cae6630c3, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Grill
-    second: {fileID: 2100000, guid: d88b10629ae2d214b8720bcd840dbb37, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: PrimaryColor
-    second: {fileID: 2100000, guid: ca59bde86eaa559489495ceb36f648e2, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: SecondaryColor
-    second: {fileID: 2100000, guid: 0e7df890316c5144cb37e6deb2b5e649, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: White
-    second: {fileID: 2100000, guid: 8350e20adcf5a7b409e265a9960eef4c, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Window
-    second: {fileID: 2100000, guid: 8af351cbf1fad1346a439937e9897a66, type: 2}
+  externalObjects: {}
   materials:
     importMaterials: 1
     materialName: 0
@@ -105,9 +69,9 @@ ModelImporter:
     previousCalculatedGlobalScale: 1
     hasPreviousCalculatedGlobalScale: 0
   tangentSpace:
-    normalSmoothAngle: 45
+    normalSmoothAngle: 60
     normalImportMode: 0
-    tangentImportMode: 0
+    tangentImportMode: 3
     normalCalculationMode: 4
   importAnimation: 1
   copyAvatar: 0

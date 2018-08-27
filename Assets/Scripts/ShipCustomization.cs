@@ -6,16 +6,21 @@ public class ShipCustomization : MonoBehaviour
 {
     [SerializeField] private Color primary, secondary, trail;
 
+    private ShipSettings colors;
     private Color shipPrimary, shipSecondary, shipTrail;
     private Transform model;
 
     public void Init(Transform shipModel)
     {
         model = shipModel;
+        colors = model.GetComponentInParent<ShipSettings>();
 
-        shipPrimary = primary;
-        shipSecondary = secondary;
-        shipTrail = trail;
+        primary = colors.primary;
+        secondary = colors.secondary;
+        trail = colors.trail;
+        shipPrimary = colors.primary;
+        shipSecondary = colors.secondary;
+        shipTrail = colors.trail;
         UpdateColors();
     }
 	

@@ -4,23 +4,8 @@ using UnityEngine;
 
 public class ShipController : MonoBehaviour
 {
-    //controls how the ship handles
-    [Header("Ship Handling")]
-    [SerializeField] private float desiredHeight = 5.0f;
-    [SerializeField] private float maxHoverForce = 20.0f;
-    [SerializeField] private float castDistance = 30.0f;
-    [SerializeField] private float speed = 75.0f;
-    [SerializeField] private float reverseSpeed = 75.0f;
-    [SerializeField] private float acceleration = 1.0f;
-    [SerializeField] private float deceleration = 0.5f;
-    [SerializeField] private float airBrake = 1.0f;
-    [SerializeField] private float steerSpeed = 3.0f;
-    [SerializeField] private float steerMomentum = 0.5f;
-    [SerializeField] private float forwardMomentum = 0.0f; //this option's a bit broken right now
-    [SerializeField] private float pitchSpeedLimit = 10.0f; //the maximum up/downforce you can get from pitching the ship
-    [SerializeField] private bool driftForward = true;
+    private ShipSettings handling;
 
-    [Header("Ship Model")]
     [SerializeField] private GameObject shipPrefab;
 
     [Header("Camera Settings")]
@@ -68,6 +53,7 @@ public class ShipController : MonoBehaviour
 
         ship = Instantiate(shipPrefab, transform).transform;
         ship.localPosition = Vector3.zero;
+        handling = ship.GetComponent<ShipSettings>();
 
         camSmooth = Instantiate(camSpot, transform.position, transform.rotation);
         camSnappy = Instantiate(camSpot, transform);
@@ -82,7 +68,7 @@ public class ShipController : MonoBehaviour
 
         GetComponent<ShipCustomization>().Init(model);
 
-        pitchLimit = Mathf.Rad2Deg * Mathf.Asin(pitchSpeedLimit / speed);
+        pitchLimit = Mathf.Rad2Deg * Mathf.Asin(handling.pitchSpeedLimit / handling.speed);
 
         g_manager = FindObjectOfType<GameManager>();
         shipID = g_manager.RegisterShip(this);
@@ -119,21 +105,21 @@ public class ShipController : MonoBehaviour
 
     void HoverLogic()
     {
-        Debug.DrawLine(transform.position, transform.position + newGravity.normalized * desiredHeight, Color.blue);
+        Debug.DrawLine(transform.position, transform.position + newGravity.normalized * handling.desiredHeight, Color.blue);
         //get the current surface
         RaycastHit hit;
-        if (Physics.Raycast(transform.position, newGravity, out hit, castDistance))
+        if (Physics.Raycast(transform.position, newGravity, out hit, handling.castDistance))
         {
             //adjust gravity to new surface
             newGravity = -hit.normal.normalized;
             newGravity *= gravityScalar;
 
             float currentUp = Vector3.Dot(rb.velocity, ship.up);
-            float force = desiredHeight - hit.distance;
+            float force = handling.desiredHeight - hit.distance;
 
-            if (hit.distance <= desiredHeight)
+            if (hit.distance <= handling.desiredHeight)
             {
-                force *= (maxHoverForce / desiredHeight);
+                force *= (handling.maxHoverForce / handling.desiredHeight);
                 if (force < 0) force *= -1.0f;
                 force += 1.0f;
 
@@ -175,8 +161,8 @@ public class ShipController : MonoBehaviour
         }
 
         model.RotateAroundLocal(Vector3.forward, -(Mathf.Deg2Rad * rollDegrees * rollDir));
-        rollDegrees *= (0.99f - (360.0f - rollDegrees) / 1800.0f);
-        rollDegrees -= Time.fixedDeltaTime * 1.0f + (360.0f - rollDegrees) / 180.0f;
+        //rollDegrees *= (0.99f - (360.0f - rollDegrees) / 1800.0f);
+        rollDegrees -= Time.fixedDeltaTime * 200.0f + Mathf.Abs(Mathf.Sin(0.5f * rollDegrees * Mathf.Deg2Rad)) * 1000.0f * Time.fixedDeltaTime;
         if (rollDegrees < 0.0f) rollDegrees = 0.0f;
         model.RotateAroundLocal(Vector3.forward, (Mathf.Deg2Rad * rollDegrees * rollDir));
     }
@@ -232,12 +218,12 @@ public class ShipController : MonoBehaviour
         Quaternion oldRot = ship.rotation;
 
         ship.position = rb.velocity;
-        ship.RotateAround(Vector3.zero, ship.up, horz * steerSpeed);
-        rb.velocity = Vector3.Lerp(rb.velocity, ship.position, steerMomentum);
+        ship.RotateAround(Vector3.zero, ship.up, horz * handling.steerSpeed);
+        rb.velocity = Vector3.Lerp(rb.velocity, ship.position, handling.steerMomentum);
         ship.position = oldPos;
         ship.rotation = oldRot;
 
-        ship.RotateAround(ship.up, horz * steerSpeed * Time.fixedDeltaTime);
+        ship.RotateAround(ship.up, horz * handling.steerSpeed * Time.fixedDeltaTime);
 
         Vector3 vel = rb.velocity;
         Vector3 speedUp = Vector3.Project(vel, ship.up);
@@ -246,7 +232,7 @@ public class ShipController : MonoBehaviour
 
         speedFwd = speedFwd.normalized * Mathf.Abs(currentSpeed);
         vel = speedUp + speedRight + speedFwd;
-        rb.velocity = Vector3.Lerp(rb.velocity, vel, forwardMomentum);
+        rb.velocity = Vector3.Lerp(rb.velocity, vel, handling.forwardMomentum);
 
         Vector3 proj = ship.forward.normalized - (Vector3.Dot(ship.forward, -newGravity.normalized)) * -newGravity.normalized;
         Quaternion newRot = Quaternion.LookRotation(proj.normalized, -newGravity.normalized);
@@ -256,7 +242,7 @@ public class ShipController : MonoBehaviour
         AirBrake();
 
         prevRotate = (Mathf.Deg2Rad * rotatePercentage) * pitchLimit;
-        prevLean = (Mathf.Deg2Rad * leanPercentage) * (30.0f * (currentSpeed / speed) + 20.0f);
+        prevLean = (Mathf.Deg2Rad * leanPercentage) * (30.0f * (currentSpeed / handling.speed) + 20.0f);
         ship.RotateAround(ship.right, prevRotate);
         ship.RotateAround(ship.forward, prevLean);
     }
@@ -267,10 +253,10 @@ public class ShipController : MonoBehaviour
         float dist = inputAngle - cameraAngle;
         if (dist >= 180.0f) cameraAngle += 360.0f;
         if (dist <= -180.0f) cameraAngle -= 360.0f;
-        cameraAngle = Mathf.Lerp(cameraAngle, inputAngle, 0.15f);
+        cameraAngle = Mathf.Lerp(cameraAngle, inputAngle, Time.fixedDeltaTime * 7.5f);
 
         float vel = rb.velocity.sqrMagnitude;
-        vel /= (speed * speed);
+        vel /= (handling.speed * handling.speed);
 
         Vector3 diff = cam.transform.position - ship.transform.position;
         float x = diff.magnitude;
@@ -302,7 +288,7 @@ public class ShipController : MonoBehaviour
     void AirBrake()
     {
         //braking to prevent drifts
-        float accelForce = -Vector3.Dot(rb.velocity, ship.right) * airBrake;
+        float accelForce = -Vector3.Dot(rb.velocity, ship.right) * handling.airBrake;
         accelForce *= (1.0f - drift);
         rb.AddForce(ship.right * accelForce * rb.mass);
     }
@@ -315,19 +301,19 @@ public class ShipController : MonoBehaviour
         HUD.UpdateSpeed(currentSpeed);
         HUD.UpdateMomentum(rb.velocity.magnitude);
 
-        if (accel == 0.0f && drift > 0.0f && driftForward) return;
-        if ((accel > 0.0f && currentSpeed > speed) || (accel < 0.0f && currentSpeed < -speed)) return; //for booster pads
+        if (accel == 0.0f && drift > 0.0f && handling.driftForward) return;
+        if ((accel > 0.0f && currentSpeed > handling.speed) || (accel < 0.0f && currentSpeed < -handling.speed)) return; //for booster pads
 
         float desiredSpeed = 0.0f;
-        if(accel > 0.0f) desiredSpeed = speed * accel * (1.0f + rb.drag / acceleration);
-        else desiredSpeed = reverseSpeed * accel * (1.0f + rb.drag / acceleration);
+        if(accel > 0.0f) desiredSpeed = handling.speed * accel * (1.0f + rb.drag / handling.acceleration);
+        else desiredSpeed = handling.reverseSpeed * accel * (1.0f + rb.drag / handling.acceleration);
 
         float accelForce = (desiredSpeed - currentSpeed);
-        if (accelForce > 0.0f || accel < 0.0f) accelForce *= acceleration;
+        if (accelForce > 0.0f || accel < 0.0f) accelForce *= handling.acceleration;
         else
         {
-            if (drift > 0.0f && driftForward) accelForce = 0.0f;
-            accelForce *= deceleration;
+            if (drift > 0.0f && handling.driftForward) accelForce = 0.0f;
+            accelForce *= handling.deceleration;
         }
 
         rb.AddForce(ship.forward * accelForce * rb.mass);
@@ -340,6 +326,6 @@ public class ShipController : MonoBehaviour
 
     public float GetMaxSpeed()
     {
-        return speed;
+        return handling.speed;
     }
 }
