@@ -106,18 +106,20 @@ public class ShipController : MonoBehaviour
     void HoverLogic()
     {
         Debug.DrawLine(transform.position, transform.position + newGravity.normalized * handling.desiredHeight, Color.blue);
-        //get the current surface
+        //get the current surface- i'm casting it from slightly higher to stop the ship 'unsticking' when it hits the floor
         RaycastHit hit;
-        if (Physics.Raycast(transform.position, newGravity, out hit, handling.castDistance))
+        float castUp = 1.0f;
+        if (Physics.Raycast(transform.position - newGravity.normalized * castUp, newGravity, out hit, handling.castDistance + castUp))
         {
             //adjust gravity to new surface
             newGravity = -hit.normal.normalized;
             newGravity *= gravityScalar;
 
+            float hitDist = hit.distance - castUp;
             float currentUp = Vector3.Dot(rb.velocity, ship.up);
-            float force = handling.desiredHeight - hit.distance;
+            float force = handling.desiredHeight - hitDist;
 
-            if (hit.distance <= handling.desiredHeight)
+            if (hitDist <= handling.desiredHeight)
             {
                 force *= (handling.maxHoverForce / handling.desiredHeight);
                 if (force < 0) force *= -1.0f;
