@@ -25,7 +25,7 @@ public class ShipController : MonoBehaviour
 
     private Vector3 newGravity = new Vector3(0.0f, -1.0f, 0.0f);
     private float gravityScalar = 9.8f;
-    private float pitchLimit;
+    private float pitchLimit, currentSpeed;
     private int shipID;
 
     //leaning stuff while moving
@@ -215,7 +215,7 @@ public class ShipController : MonoBehaviour
         ship.RotateAround(ship.right, -prevRotate);
 
         //keep the forward momentum after turning
-        float currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
+        currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
         Vector3 oldPos = ship.position;
         Quaternion oldRot = ship.rotation;
 
@@ -299,7 +299,7 @@ public class ShipController : MonoBehaviour
     {
         rb.AddForce(newGravity * rb.mass * (1.0f + rb.drag));
 
-        float currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
+        currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
         HUD.UpdateSpeed(currentSpeed);
         HUD.UpdateMomentum(rb.velocity.magnitude);
 
@@ -329,5 +329,40 @@ public class ShipController : MonoBehaviour
     public float GetMaxSpeed()
     {
         return handling.speed;
+    }
+
+    public float GetCurrentSpeed()
+    {
+        return currentSpeed;
+    }
+
+    public float GetSidewaysSpeed()
+    {
+        return Vector3.Dot(rb.velocity, ship.right);
+    }
+
+    public Vector3 GetRight()
+    {
+        return ship.right;
+    }
+
+    public Vector3 GetForward()
+    {
+        return ship.forward;
+    }
+
+    public Vector3 GetPosition()
+    {
+        return ship.position;
+    }
+
+    public float GetAcceleration()
+    {
+        return accel;
+    }
+
+    public float GetSteer()
+    {
+        return horz;
     }
 }

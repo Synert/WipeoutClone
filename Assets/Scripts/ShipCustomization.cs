@@ -9,6 +9,7 @@ public class ShipCustomization : MonoBehaviour
     private ShipSettings colors;
     private Color shipPrimary, shipSecondary, shipTrail;
     private Transform model;
+    private bool doOnce = false;
 
     public void Init(Transform shipModel)
     {
@@ -26,6 +27,11 @@ public class ShipCustomization : MonoBehaviour
 	
 	void Update()
     {
+        if (!doOnce)
+        {
+            UpdateColors();
+            doOnce = true;
+        }
         CheckColors();
 	}
 
@@ -59,7 +65,7 @@ public class ShipCustomization : MonoBehaviour
             light.color = shipTrail;
         }
 
-        foreach(TrailRenderer tR in model.GetComponentsInChildren<TrailRenderer>())
+        foreach(LineRenderer tR in model.GetComponentsInChildren<LineRenderer>())
         {
             tR.startColor = shipTrail;
         }
