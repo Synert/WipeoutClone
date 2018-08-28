@@ -25,7 +25,7 @@ public class ShipController : MonoBehaviour
 
     private Vector3 newGravity = new Vector3(0.0f, -1.0f, 0.0f);
     private float gravityScalar = 9.8f;
-    private float pitchLimit, currentSpeed;
+    private float pitchLimit, currentSpeed, angleChange;
     private int shipID;
 
     //leaning stuff while moving
@@ -109,6 +109,7 @@ public class ShipController : MonoBehaviour
         //get the current surface- i'm casting it from slightly higher to stop the ship 'unsticking' when it hits the floor
         RaycastHit hit;
         float castUp = 1.0f;
+        Vector3 oldGrav = newGravity;
         if (Physics.Raycast(transform.position - newGravity.normalized * castUp, newGravity, out hit, handling.castDistance + castUp))
         {
             //adjust gravity to new surface
@@ -151,6 +152,8 @@ public class ShipController : MonoBehaviour
             //reset to defaults
             newGravity = new Vector3(0.0f, -gravityScalar, 0.0f);
         }
+
+        angleChange = Mathf.Lerp(angleChange, Vector3.SignedAngle(oldGrav, newGravity, ship.right), 0.1f);
     }
 
     void StuntLogic()
@@ -341,6 +344,11 @@ public class ShipController : MonoBehaviour
         return Vector3.Dot(rb.velocity, ship.right);
     }
 
+    public float GetFallSpeed()
+    {
+        return Vector3.Dot(rb.velocity, ship.up);
+    }
+
     public Vector3 GetRight()
     {
         return ship.right;
@@ -349,6 +357,11 @@ public class ShipController : MonoBehaviour
     public Vector3 GetForward()
     {
         return ship.forward;
+    }
+
+    public Vector3 GetUp()
+    {
+        return ship.up;
     }
 
     public Vector3 GetPosition()
@@ -363,6 +376,16 @@ public class ShipController : MonoBehaviour
 
     public float GetSteer()
     {
-        return horz;
+        return horz * handling.steerSpeed;
+    }
+
+    public float GetPitch()
+    {
+        return vert;
+    }
+
+    public float AngleChange()
+    {
+        return angleChange;
     }
 }
