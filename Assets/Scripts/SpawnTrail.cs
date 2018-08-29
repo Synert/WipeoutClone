@@ -10,6 +10,7 @@ public class SpawnTrail : MonoBehaviour
     {
         Transform trail = Instantiate(trailPrefab, transform.parent);
         trail.position = transform.position;
+        trail.GetComponentInChildren<ParticleSystem>().transform.rotation = Quaternion.LookRotation(-transform.parent.parent.forward, transform.parent.parent.up);
         Destroy(gameObject);
 	}
 }

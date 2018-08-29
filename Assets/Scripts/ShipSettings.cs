@@ -15,7 +15,7 @@ public class ShipSettings : MonoBehaviour
     public float steerSpeed = 3.0f;
     public float steerMomentum = 0.0f;
     public float forwardMomentum = 0.35f;
-    public float pitchSpeedLimit = 15.0f; //the maximum up/downforce you can get from pitching the ship
+    public float pitchLimit = 15.0f; //degrees
     public bool driftForward = true;
 
     //default colors for customization

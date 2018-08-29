@@ -10,6 +10,8 @@ public class NewTrail : MonoBehaviour
     private float prevSpeed = 0.0f;
     private float prevSideSpeed = 0.0f;
     private float prevFallSpeed = 0.0f;
+    private Transform shipTransform;
+    private Vector3 up, right, forward;
 
 	void Start()
     {
@@ -28,7 +30,8 @@ public class NewTrail : MonoBehaviour
         trailCenter.positionCount = numPoints;
 
         ship = GetComponentInParent<ShipController>();
-	}
+        shipTransform = ship.GetShipTransform();
+    }
 	
 	void Update()
     {
@@ -41,14 +44,19 @@ public class NewTrail : MonoBehaviour
         float speed = (Mathf.Abs(curSideSpeed) * 10.0f + curSpeed * 10.0f + curSpeed * Mathf.Abs(thrust) * 10.0f + Mathf.Abs(steer) * 5.0f) * 1.0f;
         float sideSpeed = (curSideSpeed * 5.0f - steer * 3.0f - steer * curSideSpeed * 5.0f - steer * curSpeed * 4.0f) * 1.0f;
         float fallSpeed = (ship.GetFallSpeed() / ship.GetMaxSpeed()) * 3.0f;
-        fallSpeed += fallSpeed * ship.GetPitch();
-        fallSpeed += ship.GetPitch() * (curSpeed * 1.5f + 0.15f);
+        fallSpeed += fallSpeed * (ship.GetPitch() / 7.0f);
+        fallSpeed += (ship.GetPitch() / 7.0f) * (curSpeed * 1.5f + 0.15f);
         fallSpeed += ship.AngleChange() * 4.0f;
-        if (ship.GetCurrentSpeed() < 0.0f)
+        if (ship.GetCurrentSpeed() < 0.0f || thrust < 0.0f)
         {
             speed *= 0.5f;
-            sideSpeed *= -0.15f;
+            sideSpeed *= 0.5f;
+            if(thrust < 0.0f) sideSpeed *= -0.3f;
         }
+
+        right = shipTransform.right;
+        forward = shipTransform.forward;
+        up = shipTransform.up;
 
         speed = Mathf.Lerp(prevSpeed, speed, Time.deltaTime * 7.0f);
         sideSpeed = Mathf.Lerp(prevSideSpeed, sideSpeed, Time.deltaTime * 7.0f);
@@ -60,10 +68,6 @@ public class NewTrail : MonoBehaviour
 
         trail.positionCount = numPoints;
         trailCenter.positionCount = numPoints;
-
-        Vector3 right = ship.GetRight();
-        Vector3 forward = ship.GetForward();
-        Vector3 up = ship.GetUp();
 
         Vector3 pos = trail.transform.position;
         Vector3 endPos = pos - forward * speed - right * sideSpeed - fallSpeed * up;
@@ -79,8 +83,6 @@ public class NewTrail : MonoBehaviour
         for (int i = 1; i < (numPoints - 1); i++)
         {
             float t = (i) / (float)(numPoints - 1.0f);
-            //Vector3 p = t * p1 + (1.0f - t) * p2;
-            //ugh
             Vector3 p = Mathf.Pow((1.0f - t), 3.0f) * pos + 3 * Mathf.Pow((1.0f - t), 2.0f) * t * p1 + 3.0f * (1 - t) * Mathf.Pow(t, 2.0f) * p2 + Mathf.Pow(t, 3.0f) * endPos;
             trail.SetPosition(i, p);
             trailCenter.SetPosition(i, p);
