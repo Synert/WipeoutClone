@@ -289,7 +289,7 @@ public class ShipController : MonoBehaviour
 
         float vel = rb.velocity.magnitude;
 
-        if(currentSpeed < 0.0f)
+        if(currentSpeed < 0.0f && accel <= 0.0f)
         {
             vel /= handling.reverseSpeed / ((handling.reverseSpeed / handling.speed) * (1.5f + camSmoothing * 1.5f));
         }
