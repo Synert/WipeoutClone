@@ -296,7 +296,7 @@ public class ShipController : MonoBehaviour
 
         if(currentSpeed < 0.0f && accel <= 0.0f)
         {
-            vel /= handling.reverseSpeed / ((handling.reverseSpeed / 100.0f) * (1.5f + camSmoothing * 1.5f));
+            vel /= handling.reverseSpeed * camSmoothing;
         }
         else
         {
@@ -309,9 +309,10 @@ public class ShipController : MonoBehaviour
         int mult = 1;
         if (y < 0.0f) mult = -1;
 
+        float smoothMult = 0.06f;
         Vector3 newPos = transform.position - (camBackInit + vel * camBackExtra) * ship.forward + camUp * ship.up + camRight * ship.right;
         Vector3 camVel = Vector3.zero;
-        camSmooth.position = Vector3.SmoothDamp(camSmooth.position, newPos, ref camVel, 0.06f);
+        camSmooth.position = Vector3.SmoothDamp(camSmooth.position, newPos, ref camVel, smoothMult);
         camVel = Vector3.zero;
         camSnappy.position = Vector3.SmoothDamp(camSnappy.position, newPos, ref camVel, 0.06f);
         cam.transform.position = Vector3.Lerp(camSnappy.position, camSmooth.position, camSmoothing);
