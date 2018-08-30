@@ -54,6 +54,9 @@ public class ShipController : MonoBehaviour
         ship = Instantiate(shipPrefab, transform).transform;
         ship.localPosition = Vector3.zero;
         handling = ship.GetComponent<ShipSettings>();
+        rb.mass = handling.mass;
+        rb.drag = handling.drag;
+        rb.angularDrag = handling.angularDrag;
 
         cam = Instantiate(camPrefab, transform.position, transform.rotation).GetComponentInChildren<Camera>();
         camSmooth = Instantiate(camSpot, transform.position, transform.rotation);
@@ -265,16 +268,18 @@ public class ShipController : MonoBehaviour
         if ((accel > 0.0f && currentSpeed > handling.speed) || (accel < 0.0f && currentSpeed < -handling.reverseSpeed)) return; //for booster pads
 
         float desiredSpeed = 0.0f;
-        if(accel > 0.0f) desiredSpeed = handling.speed * accel * (1.0f + rb.drag / handling.acceleration);
-        else desiredSpeed = handling.reverseSpeed * accel * (1.0f + rb.drag / handling.acceleration);
+        if (accel > 0.0f) desiredSpeed = handling.speed * accel * (1.0f + rb.drag);
+        else desiredSpeed = handling.reverseSpeed * accel * (1.0f + rb.drag);
 
         float accelForce = (desiredSpeed - currentSpeed);
-        if (accelForce > 0.0f || accel < 0.0f) accelForce *= handling.acceleration;
-        else
+        if (accel == 0.0f)
         {
             if (drift > 0.0f && handling.driftForward) accelForce = 0.0f;
             accelForce *= handling.deceleration;
         }
+
+        if (accelForce > handling.acceleration) accelForce = handling.acceleration;
+        if (accelForce < -handling.brake) accelForce = -handling.brake;
 
         rb.AddForce(ship.forward * accelForce * rb.mass);
     }
@@ -291,7 +296,7 @@ public class ShipController : MonoBehaviour
 
         if(currentSpeed < 0.0f && accel <= 0.0f)
         {
-            vel /= handling.reverseSpeed / ((handling.reverseSpeed / handling.speed) * (1.5f + camSmoothing * 1.5f));
+            vel /= handling.reverseSpeed / ((handling.reverseSpeed / 100.0f) * (1.5f + camSmoothing * 1.5f));
         }
         else
         {
