@@ -284,7 +284,8 @@ public class ShipController : MonoBehaviour
         {
             ratio = currentSpeed / handling.speed;
             ratio = 1.0f - ratio;
-            accelForce = handling.acceleration * ratio * accel;
+            accelForce = handling.accelerationMin;
+            accelForce += (handling.acceleration - handling.accelerationMin) * ratio * accel;
         }
         else if (accel < 0.0f)
         {

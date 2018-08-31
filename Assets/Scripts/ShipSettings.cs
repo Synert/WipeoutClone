@@ -10,7 +10,8 @@ public class ShipSettings : MonoBehaviour
     public float speed = 100.0f;
     public float reverseSpeed = 75.0f;
     public float acceleration = 80.0f;
-    public float brake = 70.0f;
+    public float accelerationMin = 10.0f;
+    public float brake = 60.0f;
     public float deceleration = 0.5f;
     public float airBrake = 2.0f;
     public float steerSpeed = 3.0f;
