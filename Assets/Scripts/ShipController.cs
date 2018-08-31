@@ -258,7 +258,8 @@ public class ShipController : MonoBehaviour
 
     void Acceleration()
     {
-        rb.AddForce(newGravity * rb.mass * (1.0f + rb.drag));
+        if(Vector3.Dot(rb.velocity, newGravity) > 0.0f) ForceWithoutDrag(newGravity);
+        else rb.AddForce(newGravity * rb.mass);
 
         currentSpeed = Vector3.Dot(rb.velocity, ship.forward);
         HUD.UpdateSpeed(currentSpeed);
@@ -267,21 +268,39 @@ public class ShipController : MonoBehaviour
         if (accel == 0.0f && drift > 0.0f && handling.driftForward) return;
         if ((accel > 0.0f && currentSpeed > handling.speed) || (accel < 0.0f && currentSpeed < -handling.reverseSpeed)) return; //for booster pads
 
-        float desiredSpeed = 0.0f;
-        if (accel > 0.0f) desiredSpeed = handling.speed * accel * (1.0f + rb.drag);
-        else desiredSpeed = handling.reverseSpeed * accel * (1.0f + rb.drag);
+        float ratio = 0.0f;
+        float accelForce = -currentSpeed;
 
-        float accelForce = (desiredSpeed - currentSpeed);
         if (accel == 0.0f)
         {
-            if (drift > 0.0f && handling.driftForward) accelForce = 0.0f;
+            if (drift > 0.0f && handling.driftForward)
+            {
+                accelForce = 0.0f;
+            }
             accelForce *= handling.deceleration;
         }
 
-        if (accelForce > handling.acceleration) accelForce = handling.acceleration;
-        if (accelForce < -handling.brake) accelForce = -handling.brake;
+        if (accel > 0.0f)
+        {
+            ratio = currentSpeed / handling.speed;
+            ratio = 1.0f - ratio;
+            accelForce = handling.acceleration * ratio * accel;
+        }
+        else if (accel < 0.0f)
+        {
+            ratio = currentSpeed / -handling.reverseSpeed;
+            ratio = 1.0f - ratio;
+            accelForce = handling.brake * ratio * accel;
+        }
 
-        rb.AddForce(ship.forward * accelForce * rb.mass);
+        ForceWithoutDrag(accelForce * ship.forward);
+    }
+
+    void ForceWithoutDrag(Vector3 force)
+    {
+        //https://forum.unity.com/threads/physics-drag-formula.252406/
+        float coeff = (1.0f - Time.fixedDeltaTime * rb.drag);
+        rb.AddForce(((force + Vector3.Dot(rb.velocity, force.normalized) * force.normalized * rb.drag) / coeff) * rb.mass);
     }
 
     void CameraFollow()
@@ -296,7 +315,7 @@ public class ShipController : MonoBehaviour
 
         if(currentSpeed < 0.0f && accel <= 0.0f)
         {
-            vel /= handling.reverseSpeed * camSmoothing;
+            vel /= handling.reverseSpeed;
         }
         else
         {
@@ -309,12 +328,14 @@ public class ShipController : MonoBehaviour
         int mult = 1;
         if (y < 0.0f) mult = -1;
 
-        float smoothMult = 0.06f;
         Vector3 newPos = transform.position - (camBackInit + vel * camBackExtra) * ship.forward + camUp * ship.up + camRight * ship.right;
         Vector3 camVel = Vector3.zero;
-        camSmooth.position = Vector3.SmoothDamp(camSmooth.position, newPos, ref camVel, smoothMult);
+        camSmooth.position = Vector3.SmoothDamp(camSmooth.position, newPos, ref camVel, 0.06f);
+
         camVel = Vector3.zero;
         camSnappy.position = Vector3.SmoothDamp(camSnappy.position, newPos, ref camVel, 0.06f);
+        Vector3 oldPos = cam.transform.position;
+
         cam.transform.position = Vector3.Lerp(camSnappy.position, camSmooth.position, camSmoothing);
 
         Quaternion oldRot = cam.transform.rotation;
