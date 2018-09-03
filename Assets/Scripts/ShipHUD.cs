@@ -50,7 +50,7 @@ public class ShipHUD : MonoBehaviour
         if (!HUD) return;
 
         //actual kph conversion is 3.6f but the ships are 60% too big
-        speedText.text = (speed * 2.25f).ToString("F2") + " KPH";
+        speedText.text = (speed * 3.6f).ToString("F2") + " KPH";
         posText.text = "POS " + g_manager.GetPosition(ship.GetID()).ToString() + "/" + g_manager.GetShipCount();
         lapText.text = "LAP " + g_manager.GetLaps(ship.GetID()).ToString();
         momentumText.text = momentum.ToString("F2");

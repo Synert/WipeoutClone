@@ -213,7 +213,7 @@ public class ShipController : MonoBehaviour
         Quaternion oldRot = ship.rotation;
 
         ship.position = rb.velocity;
-        ship.RotateAround(Vector3.zero, ship.up, horz * handling.steerSpeed);
+        ship.RotateAround(Vector3.zero, ship.up, horz * handling.steerSpeed * (Time.fixedDeltaTime / 0.02f));
         rb.velocity = Vector3.Lerp(rb.velocity, ship.position, handling.steerMomentum);
         ship.position = oldPos;
         ship.rotation = oldRot;
