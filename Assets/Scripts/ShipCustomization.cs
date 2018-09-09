@@ -9,12 +9,14 @@ public class ShipCustomization : MonoBehaviour
     private ShipSettings colors;
     private Color shipPrimary, shipSecondary, shipTrail;
     private Transform model;
+    private ShipController ship;
     private bool doOnce = false;
 
     public void Init(Transform shipModel)
     {
         model = shipModel;
         colors = model.GetComponentInParent<ShipSettings>();
+        ship = model.GetComponentInParent<ShipController>();
 
         primary = colors.primary;
         secondary = colors.secondary;
@@ -33,6 +35,7 @@ public class ShipCustomization : MonoBehaviour
             doOnce = true;
         }
         CheckColors();
+        PulseTrail();
 	}
 
     void CheckColors()
@@ -70,7 +73,7 @@ public class ShipCustomization : MonoBehaviour
             tR.startColor = shipTrail;
         }
 
-        foreach(ParticleSystem pS in model.GetComponentsInChildren<ParticleSystem>())
+        foreach (ParticleSystem pS in model.GetComponentsInChildren<ParticleSystem>())
         {
             pS.startColor = shipTrail;
         }
@@ -83,5 +86,16 @@ public class ShipCustomization : MonoBehaviour
         trail = newTrail;
 
         CheckColors();
+    }
+
+    void PulseTrail()
+    {
+        float speedRatio = Mathf.Abs(ship.GetCurrentSpeed() / ship.GetMaxSpeed());
+        foreach (LineRenderer tR in model.GetComponentsInChildren<LineRenderer>())
+        {
+            Color newColor = shipTrail * (0.75f + 0.15f * Mathf.Sin(Time.time * 4.0f) + speedRatio * 0.4f);
+            newColor.a = 1.0f;
+            tR.startColor = newColor;
+        }
     }
 }
